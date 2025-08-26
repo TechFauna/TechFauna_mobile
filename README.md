@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 ![Plataforma](https://img.shields.io/badge/plataforma-Mobile-blue)
-![Prazo](https://img.shields.io/badge/prazo-Nov/2025-red)
+
 
 ## 📖 Sobre o Projeto
 
@@ -17,7 +17,6 @@ Este projeto está em desenvolvimento ativo, com o objetivo de finalizar a vers�
 -   🗺️ **Mapa Interativo:** Visualização da localização atual do usuário e dos recintos no painel principal.
 -   📊 **Dashboard de Dados:** Gráficos e informações sobre a quantidade e tipos de animais cadastrados.
 -   📱 **Leitor de QR Code:** Acesso rápido a informações detalhadas sobre um recinto ou animal específico através da leitura de um QR Code.
--   🐘 **API de Informações:** Consulta a uma API externa para exibir dados, curiosidades e status sobre cada animal.
 -   👤 **Perfil de Usuário:** Área de perfil para o usuário com design intuitivo.
 -   🏠 **Tela Inicial Dinâmica:** Apresentação de informações, imagens e textos relevantes na home do aplicativo.
 
@@ -63,15 +62,7 @@ O desenvolvimento será dividido em 3 sprints principais para garantir a entrega
 
 ---
 
-## ⚙️ Como Executar o Projeto Localmente
 
-Siga os passos abaixo para configurar o ambiente de desenvolvimento.
-
-**1. Pré-requisitos:**
-* [Node.js](https://nodejs.org/) (versão LTS)
-* [Yarn](https://yarnpkg.com/) ou [NPM](https://www.npmjs.com/)
-* [React Native CLI](https://reactnative.dev/docs/environment-setup) ou [Expo CLI](https://docs.expo.dev/)
-* Android Studio / Xcode para emuladores.
 
 **2. Clone o repositório:**
 ```bash
