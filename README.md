@@ -12,13 +12,29 @@ Este projeto está em desenvolvimento ativo, com o objetivo de finalizar a vers�
 
 ---
 
-## ✨ Funcionalidades Planejadas
+## Funcionalidades e Telas do Aplicativo
 
--   🗺️ **Mapa Interativo:** Visualização da localização atual do usuário e dos recintos no painel principal.
--   📊 **Dashboard de Dados:** Gráficos e informações sobre a quantidade e tipos de animais cadastrados.
--   📱 **Leitor de QR Code:** Acesso rápido a informações detalhadas sobre um recinto ou animal específico através da leitura de um QR Code.
--   👤 **Perfil de Usuário:** Área de perfil para o usuário com design intuitivo.
--   🏠 **Tela Inicial Dinâmica:** Apresentação de informações, imagens e textos relevantes na home do aplicativo.
+Nesta seção, apresentamos as principais telas do nosso aplicativo, mostrando as funcionalidades que já estão em desenvolvimento.
+
+### **Tela de Login e Cadastro**
+Descrição: Tela para realizar Login/Registro.
+![Tela de Login](assets/login.jpg)
+
+### **Tela Inicial (Home)**
+Descrição: Tela inicial da aplicação.
+![Tela Home](assets/home.jpg)
+
+### **Leitor de QR Code**
+Descrição: Tela do leitor de QR Code.
+![Leitor QR Code](assets/scanner.jpg)
+
+### **Tela de Perfil**
+Descrição: Tela de perfil do usuário.
+![Tela de Perfil](assets/perfil.jpg)
+
+### **Checklist**
+Descrição: Tela de listagem de atividades.
+![Checklist](assets/checklist.jpg)
 
 ---
 
@@ -40,9 +56,9 @@ O desenvolvimento será dividido em 3 sprints principais para garantir a entrega
 *Foco em construir a base visual do aplicativo e implementar as funcionalidades estáticas.*
 
 -   [x] **UI Fix:** Ajustar a posição do "nome" dentro do ícone da foto no Perfil de usuário.
--   [ ] **Conteúdo Home:** Adicionar as informações iniciais, textos e imagens na tela `Home`.
--   [ ] **Estrutura Dashboard:** Criar a estrutura visual do dashboard de animais na tela `home-user` (sem dados dinâmicos).
--   [ ] **Setup de Navegação:** Configurar as rotas principais do aplicativo (Home, Perfil, Mapa, etc.).
+-   [x] **Conteúdo Home:** Adicionar as informações iniciais, textos e imagens na tela `Home`.
+-   [x] **Estrutura Dashboard:** Criar a estrutura visual do dashboard de animais na tela `home-user` (sem dados dinâmicos).
+-   [x] **Setup de Navegação:** Configurar as rotas principais do aplicativo (Home, Perfil, Mapa, etc.).
 
 ### Sprint 2: Funcionalidades Interativas (Outubro)
 *Foco em dar vida ao aplicativo com a integração de APIs e funcionalidades de hardware.*
