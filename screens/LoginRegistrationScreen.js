@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+// Importa o usuário de teste do arquivo que está no .gitignore
+import { TEST_USER } from '../config/testCredentials'; 
 
 const COLORS = {
   cactusGreen: '#5A8B63',
@@ -22,7 +24,7 @@ const FONT_STYLES = {
   },
 };
 
-const LoginRegistrationScreen = ({ navigation }) => {
+const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,20 +33,34 @@ const LoginRegistrationScreen = ({ navigation }) => {
   const [role, setRole] = useState('');
 
   const handleAuth = () => {
-    // Lógica para login ou registro aqui
+    // Lógica SIMULADA para login ou registro aqui
     if (isLoginMode) {
-      Alert.alert('Login', `Tentando entrar com: ${email} e senha.`);
-      // Navegação para a tela Home
-      // navigation.navigate('Home'); 
+      // --- Lógica de MOCK DE LOGIN ---
+      if (email === TEST_USER.email && password === TEST_USER.password) {
+          Alert.alert('Sucesso!', 'Login realizado com sucesso. Redirecionando para a Home.');
+          if (onLoginSuccess) {
+              onLoginSuccess();
+          }
+      } else {
+          Alert.alert('Erro no Login', `Email ou senha inválidos. Use ${TEST_USER.email} e ${TEST_USER.password}.`);
+      }
     } else {
+      // Lógica de MOCK DE REGISTRO
       Alert.alert('Registro', `Registrando: ${name}, ${email}.`);
-      // Simula um registro e volta para o login
       setIsLoginMode(true);
+      setEmail('');
+      setPassword('');
+      Alert.alert('Sucesso no Registro', 'Sua conta foi criada. Faça login para continuar.');
     }
   };
 
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
+    setEmail('');
+    setPassword('');
+    setName('');
+    setCompany('');
+    setRole('');
   };
 
   return (
