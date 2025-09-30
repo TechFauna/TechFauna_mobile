@@ -1,17 +1,34 @@
-import React from 'react';
-import LoginRegistrationScreen from './screens/LoginRegistrationScreen';
-// import HomeScreen from './screens/HomeScreen';
-// import QRCodeScreen from './screens/QRCodeScreen';
-// import ChecklistScreen from './screens/ChecklistScreen';
-// import ProfileScreen from './screens/ProfileScreen';
+// App.js (O Roteador Principal)
+
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import AuthStack from './navigation/AuthStack';
+import MainTabs from './navigation/MainTabs';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
-  // Para testar a tela de login/registro, descomente a linha abaixo
-  return <LoginRegistrationScreen />;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Para testar outras telas, comente a linha acima e descomente a tela que quer ver
-  // return <HomeScreen />;
-  // return <QRCodeScreen />;
-  // return <ChecklistScreen />;
-  // return <ProfileScreen />;
+  // 1. LOGIN SUCESSO: Chamado da LoginRegistrationScreen
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+  
+  // 2. LOGOUT: Chamado da ProfileScreen
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
+  return (
+    <NavigationContainer>
+      <StatusBar style="auto" />
+      {isLoggedIn ? (
+        // Se logado: navegação principal (Abas)
+        <MainTabs onLogout={handleLogout} />
+      ) : (
+        // Se não logado: navegação de autenticação (Stack de Login)
+        <AuthStack onLoginSuccess={handleLoginSuccess} />
+      )}
+    </NavigationContainer>
+  );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 
 const COLORS = {
   cactusGreen: '#5A8B63',
@@ -60,60 +60,65 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.greetingText}>Olá, {userName}!</Text>
-        <TouchableOpacity onPress={handleOpenCalendar}>
-          <Text style={styles.dateText}>{formatDate(currentTime)}</Text>
-          <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={FONT_STYLES.subtitle}>Localização e Clima</Text>
-        <View style={styles.weatherInfo}>
-          <Text style={FONT_STYLES.text}> Fortaleza, CE</Text>
-          <Text style={FONT_STYLES.text}> {weather.temp} | {weather.condition}</Text>
+    // O componente SafeAreaView garante que o conteúdo não invada áreas do sistema
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.scrollViewContainer}>
+        <View style={styles.header}>
+          <Text style={styles.greetingText}>Olá, {userName}!</Text>
+          <TouchableOpacity onPress={handleOpenCalendar}>
+            <Text style={styles.dateText}>{formatDate(currentTime)}</Text>
+            <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.card}>
-        <Text style={FONT_STYLES.subtitle}>Progresso Diário</Text>
-        <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
-        </View>
-        <Text style={styles.progressText}>{Math.round(progress * 100)}% das tarefas concluídas</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={FONT_STYLES.subtitle}>Tarefas do Dia</Text>
-        {tasks.map(task => (
-          <View key={task.id} style={styles.taskItem}>
-            <View style={[styles.taskStatus, { backgroundColor: task.completed ? COLORS.cactusGreen : COLORS.gray }]} />
-            <Text style={[FONT_STYLES.text, { textDecorationLine: task.completed ? 'line-through' : 'none' }]}>{task.text}</Text>
+        <View style={styles.card}>
+          <Text style={FONT_STYLES.subtitle}>Localização e Clima</Text>
+          <View style={styles.weatherInfo}>
+            <Text style={FONT_STYLES.text}> Fortaleza, CE</Text>
+            <Text style={FONT_STYLES.text}> {weather.temp} | {weather.condition}</Text>
           </View>
-        ))}
-      </View>
-
-      <View style={styles.quickActions}>
-        <Text style={FONT_STYLES.subtitle}>Ações Rápidas</Text>
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Escanear QR</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Ver Animais</Text>
-          </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.card}>
+          <Text style={FONT_STYLES.subtitle}>Progresso Diário</Text>
+          <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
+          </View>
+          <Text style={styles.progressText}>{Math.round(progress * 100)}% das tarefas concluídas</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={FONT_STYLES.subtitle}>Tarefas do Dia</Text>
+          {tasks.map(task => (
+            <View key={task.id} style={styles.taskItem}>
+              <View style={[styles.taskStatus, { backgroundColor: task.completed ? COLORS.cactusGreen : COLORS.gray }]} />
+              <Text style={[FONT_STYLES.text, { textDecorationLine: task.completed ? 'line-through' : 'none' }]}>{task.text}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.quickActions}>
+          <Text style={FONT_STYLES.subtitle}>Ações Rápidas</Text>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Escanear QR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionButtonText}>Ver Animais</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: COLORS.iceWhite,
+  },
+  scrollViewContainer: {
     padding: 20,
   },
   header: {
