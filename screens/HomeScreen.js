@@ -59,6 +59,14 @@ const HomeScreen = ({ navigation }) => {
     console.log('Navegar para a tela do Calendário');
   };
 
+  const handleScanQR = () => {
+    navigation.navigate('QR Code');
+  };
+
+  const handleViewAnimals = () => {
+    console.log('Navegar para a tela de Ver Animais');
+  };
+
   return (
     // O componente SafeAreaView garante que o conteúdo não invada áreas do sistema
     <SafeAreaView style={styles.safeArea}>
@@ -100,10 +108,10 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.quickActions}>
           <Text style={FONT_STYLES.subtitle}>Ações Rápidas</Text>
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleScanQR}>
               <Text style={styles.actionButtonText}>Escanear QR</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleViewAnimals}>
               <Text style={styles.actionButtonText}>Ver Animais</Text>
             </TouchableOpacity>
           </View>

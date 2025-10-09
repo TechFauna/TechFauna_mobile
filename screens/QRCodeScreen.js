@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { CameraView, Camera } from 'expo-camera';
+import { handleQRCodeData } from '../utils/qrCodeHandler';
 
 const COLORS = {
   cactusGreen: '#5A8B63',
@@ -25,25 +27,44 @@ const FONT_STYLES = {
 const QRCodeScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [isFlashOn, setIsFlashOn] = useState(false);
+  const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      // Solicita permissão da câmera ao montar a tela
-      // const { status } = await Camera.requestCameraPermissionsAsync();
-      // setHasPermission(status === 'granted');
-      
-      // Simulação da permissão para fins de demonstração
-      setHasPermission(true); 
-    })();
+    const getCameraPermissions = async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+    };
+
+    getCameraPermissions();
   }, []);
 
-  const handleScan = () => {
-    Alert.alert('Escanear', 'A função de escanear o QR Code seria ativada agora.');
+  const handleBarCodeScanned = ({ type, data }) => {
+    setScanned(true);
+
+    // Usa o handler personalizado para processar os dados
+    handleQRCodeData(data, type, navigation);
+
+    // Adiciona opção para escanear novamente
+    setTimeout(() => {
+      Alert.alert(
+        'QR Code Processado',
+        'Deseja escanear outro código?',
+        [
+          {
+            text: 'Sim',
+            onPress: () => setScanned(false),
+          },
+          {
+            text: 'Não',
+            style: 'cancel',
+          },
+        ]
+      );
+    }, 1000); // Delay para permitir que outros alertas sejam mostrados primeiro
   };
 
   const toggleFlash = () => {
     setIsFlashOn(prev => !prev);
-    Alert.alert('Flash', `Flash ${isFlashOn ? 'Desligado' : 'Ligado'}`);
   };
 
   if (hasPermission === null) {
@@ -62,28 +83,47 @@ const QRCodeScreen = ({ navigation }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       <Text style={FONT_STYLES.title}>Escanear QR Code</Text>
+
       <View style={styles.cameraView}>
-        <View style={styles.cameraPlaceholder} />
+        <CameraView
+          style={styles.camera}
+          facing="back"
+          flash={isFlashOn ? 'on' : 'off'}
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr', 'pdf417'],
+          }}
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        >
+          <View style={styles.overlay}>
+            <View style={styles.scanArea} />
+          </View>
+        </CameraView>
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleScan}>
-          <Text style={styles.buttonText}>Escanear</Text>
+        <TouchableOpacity
+          style={[styles.button, scanned && styles.buttonDisabled]}
+          onPress={() => setScanned(false)}
+          disabled={!scanned}
+        >
+          <Text style={styles.buttonText}>
+            {scanned ? 'Escanear Novamente' : 'Escaneando...'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={toggleFlash}>
           <Text style={styles.buttonText}>{isFlashOn ? 'Flash Off' : 'Flash On'}</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.iceWhite,
@@ -93,19 +133,33 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.iceWhite,
+    padding: 20,
   },
   cameraView: {
     width: '100%',
-    aspectRatio: 1,
+    height: 400,
     backgroundColor: COLORS.darkGray,
     borderRadius: 10,
     overflow: 'hidden',
-    marginBottom: 20,
+    marginVertical: 20,
   },
-  cameraPlaceholder: {
+  camera: {
     flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scanArea: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderColor: COLORS.cactusGreen,
+    borderRadius: 10,
+    backgroundColor: 'transparent',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -119,12 +173,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 8,
     alignItems: 'center',
+    minWidth: 120,
+  },
+  buttonDisabled: {
+    backgroundColor: COLORS.gray,
   },
   buttonText: {
     color: 'white',
     ...FONT_STYLES.text,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
