@@ -14,14 +14,18 @@ Este projeto está em desenvolvimento ativo, com o objetivo de finalizar a vers�
 
 ## Funcionalidades e Telas do Aplicativo
 
-Nesta seção, apresentamos as principais telas do nosso aplicativo, mostrando as funcionalidades que já estão em desenvolvimento.
+Nesta seção, apresentamos as telas do nosso aplicativo, mostrando as funcionalidades que já estão em desenvolvimento.
 
-### **Tela de Login e Cadastro**
-Descrição: Tela para realizar Login/Registro.
+### **Tela de Login**
+Descrição: Permite a validação de credenciais de funcionário para acesso imediato.
 ![Tela de Login](assets/login.jpg)
 
+### **Tela de Cadastro**
+Descrição: Fluxo de cadastro que exige a inserção de Nome, Função e Empresa, direcionando o usuário de volta para a tela de Login após a conclusão.
+![Tela de Registro](assets/register.jpg)
+
 ### **Tela Inicial (Home)**
-Descrição: Tela inicial da aplicação.
+Descrição: O dashboard central exibe informações essenciais para o dia de trabalho, incluindo data e hora, previsão de localização e clima, e uma barra de progresso visual das tarefas diárias concluídas.
 ![Tela Home](assets/home.jpg)
 
 ### **Leitor de QR Code**
@@ -29,11 +33,15 @@ Descrição: Tela do leitor de QR Code.
 ![Leitor QR Code](assets/scanner.jpg)
 
 ### **Tela de Perfil**
-Descrição: Tela de perfil do usuário.
+Descrição: Exibição dos dados pessoais e integração do sistema de gamificação. Esta tela mostra a Pontuação Acumulada, o Nível do Usuário, e uma lista de bonificações (Cesta Básica, Folga, Bônus Salarial) com destaque visual para os prêmios que o funcionário já pode resgatar.
 ![Tela de Perfil](assets/perfil.jpg)
 
 ### **Checklist**
-Descrição: Tela de listagem de atividades.
+Descrição: Tela para gestão de tarefas diárias e futuras. Possui dois blocos de funcionalidade crítica:
+
+Tarefas Diárias: Requerem comprovação por foto para serem concluídas. O atingimento de 100% aciona a bonificação por pontos.
+
+Tarefas Futuras: São apenas para visualização, com bloqueio de conclusão, exigindo permissão da gerência para adiantamento.
 ![Checklist](assets/checklist.jpg)
 
 ---
