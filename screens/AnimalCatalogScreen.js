@@ -170,7 +170,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
           };
 
           if (!payload.name) {
-            Alert.alert('Campo obrigatA≥rio', 'Informe o nome da A°rea.');
+            Alert.alert('Campo obrigat√≥rio', 'Informe o nome da √°rea.');
             return;
           }
 
@@ -183,7 +183,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
         }
         case 'enclosure': {
           if (!selectedArea) {
-            Alert.alert('Selecione uma A°rea', 'Escolha em qual A°rea ficarA° o recinto.');
+            Alert.alert('Selecione uma √°rea', 'Escolha em qual √°rea ficar√° o recinto.');
             return;
           }
 
@@ -198,7 +198,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
           };
 
           if (!payload.name) {
-            Alert.alert('Campo obrigatA≥rio', 'Informe o nome do recinto.');
+            Alert.alert('Campo obrigatAÔøΩrio', 'Informe o nome do recinto.');
             return;
           }
 
@@ -219,7 +219,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
           };
 
           if (!payload.common_name) {
-            Alert.alert('Campo obrigatA≥rio', 'Informe o nome comum da espA©cie.');
+            Alert.alert('Campo obrigat√≥rio', 'Informe o nome comum da esp√©cie.');
             return;
           }
 
@@ -232,7 +232,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
         }
         case 'animal': {
           if (!selectedSpecies) {
-            Alert.alert('Selecione a espA©cie', 'Escolha a espA©cie do animal.');
+            Alert.alert('Selecione a esp√©cie', 'Escolha a esp√©cie do animal.');
             return;
           }
 
@@ -254,7 +254,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
           };
 
           if (!payload.name) {
-            Alert.alert('Campo obrigatA≥rio', 'Informe o nome do animal.');
+            Alert.alert('Campo obrigat√≥rio', 'Informe o nome do animal.');
             return;
           }
 
@@ -272,7 +272,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
       close();
       onRefresh?.();
     } catch (error) {
-      Alert.alert('Algo deu errado', error?.message || 'NA£o foi possA≠vel concluir a aAßA£o.');
+      Alert.alert('Algo deu errado', error?.message || 'NAÔøΩo foi poss√≠vel concluir a a√ß√£o.');
     } finally {
       setSubmitting(false);
     }
@@ -306,11 +306,11 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
             <Text style={styles.modalTitle}>
               {formState.data?.id ? 'Editar' : 'Novo'}{' '}
               {formState.type === 'area'
-                ? 'AÅrea'
+                ? '√Årea'
                 : formState.type === 'enclosure'
                 ? 'Recinto'
                 : formState.type === 'species'
-                ? 'EspA©cie'
+                ? 'Esp√©cie'
                 : 'Animal'}
             </Text>
             <TouchableOpacity onPress={close}>
@@ -323,13 +323,13 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
               <>
                 <TextInput
                   style={styles.input}
-                  placeholder="Nome da A°rea"
+                  placeholder="Nome da AÔøΩrea"
                   value={formValues.name}
                   onChangeText={(text) => handleChange('name', text)}
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
-                  placeholder="DescriAßA£o"
+                  placeholder="Descri√ß√£o"
                   value={formValues.description}
                   onChangeText={(text) => handleChange('description', text)}
                   multiline
@@ -339,7 +339,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
 
             {formState.type === 'enclosure' && (
               <>
-                <Text style={styles.inputLabel}>AÅrea</Text>
+                <Text style={styles.inputLabel}>AÔøΩrea</Text>
                 <ChipSelector
                   options={areaOptions}
                   value={selectedArea}
@@ -353,32 +353,32 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="CA≥digo/Identificador"
+                  placeholder="C√≥digo/Identificador"
                   value={formValues.code}
                   onChangeText={(text) => handleChange('code', text)}
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Tipo de ambiente (ex: aquA°tico, savana)"
+                  placeholder="Tipo de ambiente (ex: aqu√°tico, savana)"
                   value={formValues.environment_type}
                   onChangeText={(text) => handleChange('environment_type', text)}
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Capacidade (nA∫mero)"
+                  placeholder="Capacidade (n√∫mero)"
                   value={formValues.capacity}
                   onChangeText={(text) => handleChange('capacity', text)}
                   keyboardType="number-pad"
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Status (ativo, manutenAßA£o...)"
+                  placeholder="Status (ativo, manuten√ß√£o...)"
                   value={formValues.status}
                   onChangeText={(text) => handleChange('status', text)}
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
-                  placeholder="AnotaAßAµes"
+                  placeholder="Anota√ß√µes"
                   value={formValues.notes}
                   onChangeText={(text) => handleChange('notes', text)}
                   multiline
@@ -396,13 +396,13 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Nome cientA≠fico"
+                  placeholder="Nome cient√≠fico"
                   value={formValues.scientific_name}
                   onChangeText={(text) => handleChange('scientific_name', text)}
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Status de conservaAßA£o"
+                  placeholder="Status de conserva√ß√£o"
                   value={formValues.conservation_status}
                   onChangeText={(text) => handleChange('conservation_status', text)}
                 />
@@ -414,7 +414,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
-                  placeholder="DescriAßA£o / observaAßAµes"
+                  placeholder="Descri√ß√£o / observa√ß√µes"
                   value={formValues.description}
                   onChangeText={(text) => handleChange('description', text)}
                   multiline
@@ -424,7 +424,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
 
             {formState.type === 'animal' && (
               <>
-                <Text style={styles.inputLabel}>EspA©cie</Text>
+                <Text style={styles.inputLabel}>EspAÔøΩcie</Text>
                 <ChipSelector
                   options={speciesOptions}
                   value={selectedSpecies}
@@ -476,7 +476,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
-                  placeholder="ObservaAßAµes"
+                  placeholder="ObservaAÔøΩAÔøΩes"
                   value={formValues.notes}
                   onChangeText={(text) => handleChange('notes', text)}
                   multiline
@@ -494,7 +494,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
               <ActivityIndicator color="#FFF" />
             ) : (
               <Text style={styles.primaryButtonLabel}>
-                {formState.data?.id ? 'Salvar alteraAßAµes' : 'Cadastrar'}
+                {formState.data?.id ? 'Salvar altera√ß√µes' : 'Cadastrar'}
               </Text>
             )}
           </TouchableOpacity>
@@ -525,7 +525,7 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
     }
 
     if (!moveState.animal?.id) {
-      Alert.alert('Animal invA°lido', 'NA£o foi possA≠vel identificar o animal.');
+      Alert.alert('Animal inv√°lido', 'N√£oo foi poss√≠vel identificar o animal.');
       return;
     }
 
@@ -542,7 +542,7 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
       close();
       onRefresh?.();
     } catch (error) {
-      Alert.alert('MovimentaAßA£o nA£o concluA≠da', error?.message || 'Tente novamente mais tarde.');
+      Alert.alert('Movimenta√ß√£o n√£o conclu√≠da', error?.message || 'Tente novamente mais tarde.');
     } finally {
       setSubmitting(false);
     }
@@ -571,7 +571,7 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
 
           <TextInput
             style={[styles.input, styles.multilineInput, styles.modalInputSpacing]}
-            placeholder="ObservaAßAµes (opcional)"
+            placeholder="ObservaAÔøΩAÔøΩes (opcional)"
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -585,7 +585,7 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
             {isSubmitting ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.primaryButtonLabel}>Confirmar movimentaAßA£o</Text>
+              <Text style={styles.primaryButtonLabel}>Confirmar movimentaAÔøΩAÔøΩo</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -648,8 +648,8 @@ const AnimalCatalogScreen = () => {
     (type, entity) => {
       const displayName = entity?.name || entity?.common_name || entity?.identifier || 'registro';
       Alert.alert(
-        'Confirmar remoAßA£o',
-        `Deseja remover ${displayName}? Essa aAßA£o nA£o poderA° ser desfeita.`,
+        'Confirmar remoAÔøΩAÔøΩo',
+        `Deseja remover ${displayName}? Essa aAÔøΩAÔøΩo nAÔøΩo poderAÔøΩ ser desfeita.`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -675,7 +675,7 @@ const AnimalCatalogScreen = () => {
                 }
                 fetchCatalog();
               } catch (error) {
-                Alert.alert('NA£o foi possA≠vel remover', error?.message || 'Tente novamente.');
+                Alert.alert('NAÔøΩo foi possAÔøΩvel remover', error?.message || 'Tente novamente.');
               }
             },
           },
@@ -694,7 +694,7 @@ const AnimalCatalogScreen = () => {
     enclosures.forEach((enclosure) => {
       if (!map[enclosure.area_id]) {
         map[enclosure.area_id] = {
-          area: { id: enclosure.area_id, name: 'Sem A°rea definida' },
+          area: { id: enclosure.area_id, name: 'Sem AÔøΩrea definida' },
           enclosures: [],
         };
       }
@@ -726,7 +726,7 @@ const AnimalCatalogScreen = () => {
       return (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loaderLabel}>Carregando catA°logo...</Text>
+          <Text style={styles.loaderLabel}>Carregando catAÔøΩlogo...</Text>
         </View>
       );
     }
@@ -760,20 +760,20 @@ const AnimalCatalogScreen = () => {
                 </View>
               </View>
               <Text style={styles.cardSubtitle}>
-                {area.description || 'Nenhum detalhe cadastrado para esta A°rea.'}
+                {area.description || 'Nenhum detalhe cadastrado para esta AÔøΩrea.'}
               </Text>
 
               <View style={styles.divider} />
 
               {areaEnclosures.length === 0 ? (
-                <Text style={styles.emptyMessage}>Nenhum recinto cadastrado nesta A°rea.</Text>
+                <Text style={styles.emptyMessage}>Nenhum recinto cadastrado nesta AÔøΩrea.</Text>
               ) : (
                 areaEnclosures.map((enclosure) => (
                   <View key={enclosure.id} style={styles.enclosureRow}>
                     <View style={styles.enclosureInfo}>
                       <Text style={styles.enclosureName}>{enclosure.name}</Text>
                       <Text style={styles.enclosureMeta}>
-                        CA≥digo {enclosure.code || 'aÄì'} A∑ Capacidade{' '}
+                        CAÔøΩdigo {enclosure.code || 'aÔøΩÔøΩ'} AÔøΩ Capacidade{' '}
                         {enclosure.capacity ? `${enclosure.capacity} animais` : 'indefinida'}
                       </Text>
                       {enclosure.environment_type ? (
@@ -836,12 +836,12 @@ const AnimalCatalogScreen = () => {
         <View>
           <SectionTitle
             icon="paw"
-            title="EspA©cies cadastradas"
-            actionLabel="Nova espA©cie"
+            title="EspAÔøΩcies cadastradas"
+            actionLabel="Nova espAÔøΩcie"
             onActionPress={() => setFormState({ visible: true, type: 'species', data: null })}
           />
           {species.length === 0 ? (
-            <Text style={styles.emptyMessage}>Nenhuma espA©cie cadastrada.</Text>
+            <Text style={styles.emptyMessage}>Nenhuma espAÔøΩcie cadastrada.</Text>
           ) : (
             species.map((specie) => (
               <View key={specie.id} style={styles.card}>
@@ -877,7 +877,7 @@ const AnimalCatalogScreen = () => {
                   </View>
                 </View>
                 <Text style={styles.cardSubtitle}>
-                  {specie.scientific_name || 'Nome cientA≠fico nA£o informado.'}
+                  {specie.scientific_name || 'Nome cientAÔøΩfico nAÔøΩo informado.'}
                 </Text>
                 <View style={styles.metaRow}>
                   {specie.conservation_status ? (
@@ -941,7 +941,7 @@ const AnimalCatalogScreen = () => {
                   </View>
                 </View>
                 <Text style={styles.cardSubtitle}>
-                  {animal.speciesData?.common_name || 'EspA©cie nA£o informada'}
+                  {animal.speciesData?.common_name || 'EspAÔøΩcie nAÔøΩo informada'}
                 </Text>
                 <View style={styles.metaRow}>
                   {animal.identifier ? (
@@ -983,15 +983,15 @@ const AnimalCatalogScreen = () => {
     if (activeTab === 'history') {
       return (
         <View>
-          <SectionTitle icon="history" title="HistA≥rico de movimentaAßAµes" />
+          <SectionTitle icon="history" title="HistAÔøΩrico de movimentaAÔøΩAÔøΩes" />
           {history.length === 0 ? (
-            <Text style={styles.emptyMessage}>Nenhuma movimentaAßA£o registrada.</Text>
+            <Text style={styles.emptyMessage}>Nenhuma movimentaAÔøΩAÔøΩo registrada.</Text>
           ) : (
             history.map((entry) => (
               <View key={entry.id} style={styles.card}>
                 <Text style={styles.cardTitle}>{entry.animal?.name || 'Animal'}</Text>
                 <Text style={styles.cardSubtitle}>
-                  {entry.from_enclosure?.name || 'Sem recinto'} aÜí{' '}
+                  {entry.from_enclosure?.name || 'Sem recinto'} aÔøΩÔøΩ{' '}
                   {entry.to_enclosure?.name || 'Sem recinto'}
                 </Text>
                 <Text style={styles.historyDate}>
@@ -1011,9 +1011,9 @@ const AnimalCatalogScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.title}>CatA°logo de Animais & Recintos</Text>
+        <Text style={styles.title}>CatAÔøΩlogo de Animais & Recintos</Text>
         <Text style={styles.subtitle}>
-          Gerencie A°reas, recintos, espA©cies e acompanhe movimentaAßAµes em um sA≥ lugar.
+          Gerencie AÔøΩreas, recintos, espAÔøΩcies e acompanhe movimentaAÔøΩAÔøΩes em um sAÔøΩ lugar.
         </Text>
       </View>
 
