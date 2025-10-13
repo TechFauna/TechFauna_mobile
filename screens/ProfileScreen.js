@@ -1,138 +1,172 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
-// Lembre-se: Para usar ícones aqui, instale 'react-native-vector-icons'
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
+import { listChecklists, listTasks } from '../utils/zooService';
 
 const COLORS = {
-  cactusGreen: '#5A8B63',
-  iceWhite: '#F0F4F7',
-  gray: '#A9A9A9',
-  darkGray: '#4B4B4B',
-  red: '#C0392B',
-};
-
-const FONT_STYLES = {
-  title: {
-    fontFamily: 'Roboto',
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.darkGray,
-  },
-  subtitle: {
-    fontFamily: 'Roboto',
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.darkGray,
-  },
-  text: {
-    fontFamily: 'Roboto',
-    fontSize: 16,
-    color: COLORS.gray,
-  },
+  background: '#F7F9FC',
+  surface: '#FFFFFF',
+  primary: '#5A8B63',
+  danger: '#E74C3C',
+  border: '#E3E9F3',
+  text: '#2F3542',
+  textMuted: '#77838F',
 };
 
 const ProfileScreen = ({ navigation, onLogout }) => {
-  // Dados MOCKADOS do Usuário
-  const [user, setUser] = useState({
-    name: 'Davi Viana',
-    role: 'Engenheiro Ambiental',
-    company: 'TechFauna',
-    email: 'davi.viana@techfauna.com',
-  });
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState([]);
+  const [checklists, setChecklists] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Novos Dados MOCKADOS de Pontuação e Nível
-  const [userPoints, setUserPoints] = useState(1250);
-  const [userLevel, setUserLevel] = useState('Nível 3 (Guardião)');
-  const [rewards, setRewards] = useState([
-      { id: 1, name: 'Cesta Básica', pointsRequired: 500 },
-      { id: 2, name: 'Folga Remunerada', pointsRequired: 5000 },
-      { id: 3, name: 'Bônus Salarial', pointsRequired: 10000 },
-  ]);
+  const userName =
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split('@')?.[0] ||
+    'Colaborador';
 
-  const handleEditProfile = () => {
-    console.log('Navegar para a tela de Edição de Perfil');
-  };
+  const role = user?.user_metadata?.role || 'Equipe TechFauna';
+  const company = user?.user_metadata?.company || 'TechFauna';
 
-  const handleSettings = () => {
-    console.log('Navegar para a tela de Configurações');
-  };
-  
-  const handleOpenRewards = () => {
-      console.log('Navegar para a tela de Resgate de Bonificações.');
-      Alert.alert('Resgatar Recompensas', 'Esta ação levará à tela de resgate de bonificações.');
-  };
+  const fetchProfileData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [tasksData, checklistsData] = await Promise.all([
+        listTasks({ assignedTo: user?.id }),
+        listChecklists({ performedBy: user?.id }),
+      ]);
 
-  const handleLogout = () => {
-    console.log('Realizando logout e voltando para a tela de Login...');
-    if (onLogout) {
-        onLogout();
+      setTasks(tasksData || []);
+      setChecklists(checklistsData || []);
+    } catch (error) {
+      Alert.alert('Falha ao carregar dados', error?.message || 'Tente novamente mais tarde.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfileData();
+    }, [fetchProfileData])
+  );
+
+  const taskSummary = useMemo(() => {
+    const pending = tasks.filter((task) => task.status !== 'completed').length;
+    const completed = tasks.filter((task) => task.status === 'completed').length;
+    return {
+      total: tasks.length,
+      pending,
+      completed,
+    };
+  }, [tasks]);
+
+  const checklistSummary = useMemo(() => {
+    const lastExecution = checklists
+      .sort((a, b) => new Date(b.performed_at) - new Date(a.performed_at))
+      .at(0);
+
+    return {
+      total: checklists.length,
+      last: lastExecution?.performed_at
+        ? new Date(lastExecution.performed_at).toLocaleString('pt-BR')
+        : 'Nunca executado',
+    };
+  }, [checklists]);
+
+  const handleLogout = async () => {
+    try {
+      await onLogout?.();
+    } catch (error) {
+      Alert.alert('Erro ao sair', error?.message || 'Nao foi possivel finalizar a sessao.');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.scrollViewContainer}>
-        <Text style={styles.screenTitle}>Meu Perfil</Text>
-
-        {/* CARTÃO DE INFORMAÇÕES PESSOAIS */}
-        <View style={styles.card}>
-          <View style={styles.profilePicPlaceholder} />
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userInfo}>{user.role}</Text>
-          <Text style={styles.userInfo}>{user.company}</Text>
-        </View>
-
-        {/* NOVO CARTÃO DE PONTUAÇÃO E BONIFICAÇÕES */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Pontuação e Nível</Text>
-          
-          <View style={styles.pointsRow}>
-              {/* Pontos */}
-              <View style={styles.pointsColumn}>
-                  <Text style={styles.pointsValue}>{userPoints.toLocaleString('pt-BR')}</Text>
-                  <Text style={styles.pointsLabel}>Pontos Acumulados</Text>
-              </View>
-              {/* Nível */}
-              <View style={styles.pointsColumn}>
-                  <Text style={styles.pointsValueLevel}>{userLevel}</Text>
-                  <Text style={styles.pointsLabel}>Nível Atual</Text>
-              </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.headerCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{userName?.[0]?.toUpperCase() || 'T'}</Text>
           </View>
+          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.userMeta}>{role}</Text>
+          <Text style={styles.userMeta}>{company}</Text>
+          <Text style={styles.userEmail}>{user?.email}</Text>
+        </View>
 
-          <Text style={styles.rewardsTitle}>Bonificações Disponíveis</Text>
-          {rewards.map(reward => {
-              const isAvailable = userPoints >= reward.pointsRequired;
-              const color = isAvailable ? COLORS.cactusGreen : COLORS.gray;
-
-              return (
-                  <View key={reward.id} style={styles.rewardItem}>
-                      <Text style={styles.rewardName}>{reward.name}</Text>
-                      <Text style={[styles.rewardPoints, { color }]}>
-                          {reward.pointsRequired} pts
-                      </Text>
-                  </View>
-              );
-          })}
-
-          <TouchableOpacity style={styles.rewardButton} onPress={handleOpenRewards}>
-              <Text style={styles.rewardButtonText}>Resgatar Bonificações</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Minha produtividade</Text>
+          <View style={styles.infoRow}>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Tarefas concluidas</Text>
+              <Text style={styles.infoValue}>{taskSummary.completed}</Text>
+            </View>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Tarefas pendentes</Text>
+              <Text style={styles.infoValue}>{taskSummary.pending}</Text>
+            </View>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Total atribuida</Text>
+              <Text style={styles.infoValue}>{taskSummary.total}</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.inlineButton}
+            onPress={() => navigation.navigate('Checklist')}
+          >
+            <Text style={styles.inlineButtonText}>Abrir painel de tarefas</Text>
+            <MaterialCommunityIcons name="arrow-right" size={18} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
 
-        {/* CONTÊINER DE AÇÕES */}
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleEditProfile}>
-            <Text style={styles.actionButtonText}>Editar Perfil</Text>
-          </TouchableOpacity>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Checklists executados</Text>
+          <View style={styles.infoRow}>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Total</Text>
+              <Text style={styles.infoValue}>{checklistSummary.total}</Text>
+            </View>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Ultimo registro</Text>
+              <Text style={styles.infoValueSmall}>{checklistSummary.last}</Text>
+            </View>
+          </View>
+        </View>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleSettings}>
-            <Text style={styles.actionButtonText}>Configurações</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Preferencias rapidas</Text>
+          <TouchableOpacity style={styles.actionRow}>
+            <MaterialCommunityIcons name="shield-account" size={22} color={COLORS.primary} />
+            <Text style={styles.actionLabel}>Gerenciar permissoes e papeis</Text>
+            <MaterialCommunityIcons name="chevron-right" size={22} color={COLORS.textMuted} />
           </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionButton, styles.logoutButton]} onPress={handleLogout}>
-            <Text style={[styles.actionButtonText, styles.logoutButtonText]}>Sair</Text>
+          <TouchableOpacity style={styles.actionRow}>
+            <MaterialCommunityIcons name="bell-outline" size={22} color={COLORS.primary} />
+            <Text style={styles.actionLabel}>Notificacoes e lembretes</Text>
+            <MaterialCommunityIcons name="chevron-right" size={22} color={COLORS.textMuted} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionRow}>
+            <MaterialCommunityIcons name="account-edit" size={22} color={COLORS.primary} />
+            <Text style={styles.actionLabel}>Editar dados pessoais</Text>
+            <MaterialCommunityIcons name="chevron-right" size={22} color={COLORS.textMuted} />
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={loading}>
+          <MaterialCommunityIcons name="logout" size={22} color="#FFF" />
+          <Text style={styles.logoutLabel}>{loading ? 'Saindo...' : 'Sair da conta'}</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -141,150 +175,144 @@ const ProfileScreen = ({ navigation, onLogout }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.iceWhite,
+    backgroundColor: COLORS.background,
   },
-  scrollViewContainer: {
+  container: {
     padding: 20,
+    paddingBottom: 100,
+    gap: 20,
   },
-  screenTitle: {
-    ...FONT_STYLES.title,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
+  headerCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.07,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
     elevation: 3,
   },
-  profilePicPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#E0E0E0',
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#E1EDE4',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
+  },
+  avatarText: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   userName: {
-    ...FONT_STYLES.subtitle,
-    color: COLORS.darkGray,
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
   },
-  userInfo: {
-    ...FONT_STYLES.text,
-    color: COLORS.gray,
-    textAlign: 'center',
-    marginBottom: 2,
+  userMeta: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    marginTop: 2,
   },
-  // NOVOS ESTILOS PARA PONTUAÇÃO
-  cardTitle: {
-    ...FONT_STYLES.subtitle,
-    color: COLORS.darkGray,
-    marginBottom: 15,
-    alignSelf: 'flex-start',
+  userEmail: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    marginTop: 6,
   },
-  pointsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  pointsColumn: {
-    alignItems: 'center',
-  },
-  pointsValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.cactusGreen,
-  },
-  pointsValueLevel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.darkGray,
-    textAlign: 'center',
-  },
-  pointsLabel: {
-    ...FONT_STYLES.text,
-    fontSize: 12,
-    color: COLORS.gray,
-  },
-  rewardsTitle: {
-    ...FONT_STYLES.subtitle,
-    color: COLORS.darkGray,
-    marginTop: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-  },
-  rewardItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.iceWhite,
-    paddingHorizontal: 5,
-  },
-  rewardName: {
-    ...FONT_STYLES.text,
-    color: COLORS.darkGray,
-    fontWeight: 'bold',
-  },
-  rewardPoints: {
-    ...FONT_STYLES.text,
-    fontWeight: 'bold',
-  },
-  rewardButton: {
-    backgroundColor: COLORS.cactusGreen,
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 20,
-    width: '100%',
-    alignItems: 'center',
-  },
-  rewardButtonText: {
-    color: 'white',
-    ...FONT_STYLES.subtitle,
-    fontSize: 16,
-  },
-  // FIM DOS NOVOS ESTILOS
-  actionsContainer: {
-    backgroundColor: 'white',
-    borderRadius: 10,
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: 20,
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 16,
   },
-  actionButton: {
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  infoBox: {
+    flex: 1,
+    minWidth: 110,
+    backgroundColor: '#F1F6F2',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    marginTop: 8,
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  infoValueSmall: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  inlineButton: {
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: '#E9F3EC',
   },
-  actionButtonText: {
-    ...FONT_STYLES.text,
-    marginLeft: 10,
-    color: COLORS.darkGray,
+  inlineButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  actionLabel: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 15,
+    color: COLORS.text,
+    fontWeight: '500',
   },
   logoutButton: {
-    backgroundColor: COLORS.red, // Mudança para cor de destaque no Sair
-    borderBottomWidth: 0,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.danger,
+    paddingVertical: 16,
+    borderRadius: 20,
+    gap: 8,
   },
-  logoutButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+  logoutLabel: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 
