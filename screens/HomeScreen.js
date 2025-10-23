@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { useAuth } from '../context/AuthContext';
 import {
   listAnimals,
@@ -27,8 +28,9 @@ const COLORS = {
   text: '#2F3542',
   textMuted: '#77838F',
   border: '#E3E9F3',
-  warning: '#F39C12',
+  warning: '#F39C12', // Cor para status pendente (laranja)
   success: '#27AE60',
+  error: '#C0392B', // Cor para status bloqueado (vermelho escuro)
 };
 
 const HomeScreen = ({ navigation }) => {
@@ -41,6 +43,9 @@ const HomeScreen = ({ navigation }) => {
     enclosures: 0,
     species: 0,
   });
+  // ESTADOS PARA LOCALIZAÇÃO
+  const [locationText, setLocationText] = useState('Carregando localização...');
+  const [currentCoords, setCurrentCoords] = useState(null); 
 
   const displayName =
     user?.user_metadata?.name ||
@@ -48,6 +53,41 @@ const HomeScreen = ({ navigation }) => {
     user?.email?.split('@')?.[0] ||
     'Equipe';
 
+  // --- LÓGICA DE LOCALIZAÇÃO ---
+  const fetchLocation = useCallback(async () => {
+    try {
+      // 1. Solicitar Permissão
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocationText('Permissão de localização negada.');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.BestForNavigation });
+      
+      let address = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      if (address && address.length > 0) {
+        const primaryText = address[0].street ? `${address[0].street}, ${address[0].name}` : `${address[0].city}, ${address[0].region}`;
+        setLocationText(primaryText || 'Localização desconhecida');
+      } else {
+        setLocationText('Endereço não encontrado.');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar localização:', error);
+      setLocationText('Erro ao buscar localização.');
+    }
+  }, []);
+  
+  // FUNÇÃO PARA NAVEGAR PARA A TELA INTERNA DO MAPA, PASSANDO O ENDEREÇO
+  const handleNavigateToMap = () => {
+    navigation.navigate('Mapa', { initialAddress: locationText }); // ENVIA O ENDEREÇO
+  };
+
+  // --- FUNÇÕES EXISTENTES (DASHBOARD) ---
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
     try {
@@ -57,7 +97,6 @@ const HomeScreen = ({ navigation }) => {
         listSpecies(),
         listTasks({ assignedTo: user?.id }),
       ]);
-
       setSummary({
         animals: animalsData?.length || 0,
         enclosures: enclosuresData?.length || 0,
@@ -79,27 +118,32 @@ const HomeScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchDashboard();
-    }, [fetchDashboard])
+      fetchLocation(); // CHAMA A FUNÇÃO DE LOCALIZAÇÃO AO ENTRAR NA TELA
+    }, [fetchDashboard, fetchLocation])
   );
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await fetchDashboard();
+      await fetchLocation(); // ATUALIZA A LOCALIZAÇÃO AO REFRESH
     } finally {
       setRefreshing(false);
     }
-  }, [fetchDashboard]);
+  }, [fetchDashboard, fetchLocation]);
 
+
+  
   const pendingTasksCount = tasks.filter((task) => task.status !== 'completed').length;
 
   const quickStats = useMemo(
     () => [
+      // ... (Quick Stats)
       {
         key: 'animals',
         label: 'Animais',
         value: summary.animals,
-        icon: 'elephant',
+        icon: 'paw', // Trocado de 'elephant' para 'paw' (mais genérico)
       },
       {
         key: 'enclosures',
@@ -162,6 +206,17 @@ const HomeScreen = ({ navigation }) => {
           <MaterialCommunityIcons name="account-circle" size={48} color={COLORS.primary} />
         </View>
 
+        {/* CARTÃO DE LOCALIZAÇÃO (Navega internamente) */}
+        <TouchableOpacity style={styles.locationCard} onPress={handleNavigateToMap}>
+          <MaterialCommunityIcons name="map-marker" size={20} color={COLORS.primary} />
+          <View style={styles.locationTextContainer}>
+            <Text style={styles.locationLabel}>Localização Atual (Clique)</Text>
+            <Text style={styles.locationValue}>{locationText}</Text>
+          </View>
+          <MaterialCommunityIcons name="arrow-right" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
+
+
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Resumo rapido</Text>
           <View style={styles.statsRow}>
@@ -204,7 +259,12 @@ const HomeScreen = ({ navigation }) => {
                     task.status === 'pending' ? styles.taskStatusPending : styles.taskStatusBlocked,
                   ]}
                 >
-                  <Text style={styles.taskStatusText}>
+                  <Text 
+                    style={[
+                      styles.taskStatusText, 
+                      task.status === 'blocked' && { color: COLORS.error }
+                    ]}
+                  >
                     {task.status === 'pending'
                       ? 'Pendente'
                       : task.status === 'blocked'
@@ -272,6 +332,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textMuted,
   },
+  // ESTILO PARA O CARTÃO DE LOCALIZAÇÃO
+  locationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 15,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: '#000000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  locationTextContainer: {
+    flex: 1,
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  locationLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  locationValue: {
+    fontSize: 14,
+    color: COLORS.text,
+    marginTop: 2,
+  },
+  // FIM DOS ESTILOS DE LOCALIZAÇÃO
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: 20,
