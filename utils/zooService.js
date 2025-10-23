@@ -34,6 +34,28 @@ const guessContentType = (uri) => {
   }
 };
 
+export const listAnimalsByEnclosure = async (enclosureId) =>
+  withErrorHandling(
+    supabase
+      .from('animals')
+      .select(
+        `
+        *,
+        species:species_id (
+          id,
+          common_name
+        ),
+        enclosure:current_enclosure_id (
+          id,
+          name
+        )
+      `
+      )
+      .eq('current_enclosure_id', enclosureId) // O filtro principal
+      .order('name', { ascending: true }),
+    'Falha ao carregar os animais do recinto.'
+  );
+
 const uploadMedia = async ({ uri, bucket, prefix }) => {
   if (!uri) return null;
 

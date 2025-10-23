@@ -28,8 +28,8 @@ export const handleQRCodeData = async (data, type, navigation) => {
       return await handleURLQRCode(data, navigation);
     }
 
-    // Verifica se é um código de animal/espécie
-    if (qrData.animalId || qrData.speciesId) {
+    // Verifica se é um código de animal/espécie/RECINTO
+    if (qrData.animalId || qrData.speciesId || qrData.enclosureId) {
       return await handleAnimalQRCode(qrData, navigation);
     }
 
@@ -56,6 +56,10 @@ const handleTechFaunaQRCode = async (qrData, navigation) => {
     case 'viewAnimal':
       return await navigateToAnimal(actionData.animalId, navigation);
     
+    // --- MODIFICAÇÃO SUGERIDA: Adicionar ação para ver recinto ---
+    case 'viewEnclosure':
+      return await navigateToEnclosure(actionData.enclosureId, actionData.name, navigation);
+
     case 'addToChecklist':
       return await addToChecklist(actionData.speciesId, actionData.location);
     
@@ -92,15 +96,23 @@ const handleURLQRCode = async (url, navigation) => {
 };
 
 /**
- * Manipula QR Codes de animais/espécies
+ * Manipula QR Codes de animais/espécies/recintos
  */
 const handleAnimalQRCode = async (qrData, navigation) => {
-  const { animalId, speciesId, name } = qrData;
+  // Adicionada a extração de 'enclosureId'
+  const { animalId, speciesId, enclosureId, name } = qrData;
 
+  // 1. Prioridade: ID do Animal (lógica original)
   if (animalId) {
     return await navigateToAnimal(animalId, navigation);
   }
 
+  // 2. Prioridade: ID do Recinto (NOVA LÓGICA)
+  if (enclosureId) {
+    return await navigateToEnclosure(enclosureId, name, navigation);
+  }
+
+  // 3. Prioridade: ID da Espécie (lógica original)
   if (speciesId) {
     Alert.alert(
       'Espécie Encontrada',
@@ -117,14 +129,14 @@ const handleAnimalQRCode = async (qrData, navigation) => {
 };
 
 /**
- * Navega para a tela de detalhes do animal
+ * Navega para a tela de detalhes do animal (Função Original)
  */
 const navigateToAnimal = async (animalId, navigation) => {
   try {
     // Busca dados do animal no Supabase
     const { data: animal, error } = await supabase
       .from('animals')
-      .select('*')
+      .select('*, species:species_id(*), enclosure:current_enclosure_id(*)') // Query melhorada para incluir relações
       .eq('id', animalId)
       .single();
 
@@ -132,7 +144,10 @@ const navigateToAnimal = async (animalId, navigation) => {
 
     if (animal) {
       // Navega para a tela de detalhes do animal
-      navigation.navigate('AnimalDetails', { animal });
+      // **Atenção**: O código original navegava para 'AnimalDetails'. 
+      // Se sua tela for a 'AnimalCatalogScreen', ajuste aqui.
+      // Vou manter 'AnimalDetails' como no original.
+      navigation.navigate('AnimalDetails', { animal }); 
     } else {
       Alert.alert('Erro', 'Animal não encontrado.');
     }
@@ -143,18 +158,52 @@ const navigateToAnimal = async (animalId, navigation) => {
 };
 
 /**
- * Adiciona espécie à checklist do usuário
+ * --- NOVA FUNÇÃO ---
+ * Busca animais de um recinto e navega para a tela de lista
+ */
+const navigateToEnclosure = async (enclosureId, enclosureName, navigation) => {
+  try {
+    // Busca todos os animais que estão NESTE recinto
+    const { data: animals, error } = await supabase
+      .from('animals')
+      .select('*, species:species_id(common_name)') // Pega o nome da espécie
+      .eq('current_enclosure_id', enclosureId);
+
+    if (error) throw error;
+
+    if (animals && animals.length > 0) {
+      // Navega para uma NOVA TELA que você precisará criar
+      // Esta tela deve ser capaz de receber 'animals' (um array) e exibi-los
+      navigation.navigate('EnclosureAnimalList', { 
+        animals: animals, 
+        enclosureName: enclosureName || 'Animais do Recinto' 
+      });
+    } else {
+      Alert.alert('Recinto Vazio', 'Nenhum animal encontrado neste recinto.');
+    }
+  } catch (error) {
+    console.error('Erro ao buscar animais do recinto:', error);
+    Alert.alert('Erro', 'Não foi possível carregar os dados do recinto.');
+  }
+};
+
+
+/**
+ * Adiciona espécie à checklist do usuário (Função Original)
  */
 const addToChecklist = async (speciesId, location = null) => {
   try {
     // Aqui você implementaria a lógica para adicionar à checklist
     // Por exemplo, salvar no Supabase
+    // **Atenção**: O código original usava uma tabela 'user_checklist'
+    // e 'current_user_id' fixo.
+    // Você deve buscar o user_id do useAuth() ou similar.
     const { error } = await supabase
-      .from('user_checklist')
+      .from('user_checklist') // Verifique se esta tabela existe no seu DB
       .insert([
         {
           species_id: speciesId,
-          user_id: 'current_user_id', // Substituir pelo ID do usuário atual
+          user_id: supabase.auth.getUser()?.id, // Melhor forma de pegar o user
           location: location,
           scanned_at: new Date().toISOString()
         }
@@ -174,7 +223,7 @@ const addToChecklist = async (speciesId, location = null) => {
 };
 
 /**
- * Manipula compartilhamento de localização
+ * Manipula compartilhamento de localização (Função Original)
  */
 const handleLocationShare = async (coordinates, navigation) => {
   const { latitude, longitude } = coordinates;
@@ -187,7 +236,8 @@ const handleLocationShare = async (coordinates, navigation) => {
       { 
         text: 'Ver Mapa', 
         onPress: () => {
-          navigation.navigate('Map', { 
+          // O código original navegava para 'Map'. Sua tela se chama 'MapScreen'.
+          navigation.navigate('Mapa', { // Ajustado de 'Map' para 'Mapa'
             initialRegion: {
               latitude,
               longitude,
@@ -202,7 +252,7 @@ const handleLocationShare = async (coordinates, navigation) => {
 };
 
 /**
- * Mostra dados genéricos do QR Code
+ * Mostra dados genéricos do QR Code (Função Original)
  */
 const showGenericQRCodeData = (data, type) => {
   Alert.alert(
@@ -213,7 +263,7 @@ const showGenericQRCodeData = (data, type) => {
 };
 
 /**
- * Gera um QR Code para compartilhar dados do TechFauna
+ * Gera um QR Code para compartilhar dados do TechFauna (Função Original)
  */
 export const generateTechFaunaQRCode = (action, data) => {
   const qrData = {
@@ -229,5 +279,6 @@ export const generateTechFaunaQRCode = (action, data) => {
 
 // Exemplos de uso:
 // generateTechFaunaQRCode('viewAnimal', { animalId: '123' })
+// generateTechFaunaQRCode('viewEnclosure', { enclosureId: 'recinto-456', name: 'Recinto das Aves' })
 // generateTechFaunaQRCode('addToChecklist', { speciesId: '456', location: 'Parque Nacional' })
 // generateTechFaunaQRCode('shareLocation', { coordinates: { latitude: -3.7319, longitude: -38.5267 } })
