@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import AnimalCatalogScreen from '../screens/AnimalCatalogScreen';
+import MapScreen from '../screens/MapScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,14 @@ export default function HomeStack() {
         options={{
           headerShown: true,
           headerTitle: 'Catálogo de Animais',
+        }}
+      />
+      <Stack.Screen
+        name="Mapa"
+        component={MapScreen}
+        options={{
+          headerShown: true,
+          headerTitle: 'Mapa de Localização',
         }}
       />
     </Stack.Navigator>
