@@ -198,7 +198,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
           };
 
           if (!payload.name) {
-            Alert.alert('Campo obrigatA�rio', 'Informe o nome do recinto.');
+            Alert.alert('Campo obrigatório', 'Informe o nome do recinto.');
             return;
           }
 
@@ -323,7 +323,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
               <>
                 <TextInput
                   style={styles.input}
-                  placeholder="Nome da A�rea"
+                  placeholder="Nome da Área"
                   value={formValues.name}
                   onChangeText={(text) => handleChange('name', text)}
                 />
@@ -339,7 +339,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
 
             {formState.type === 'enclosure' && (
               <>
-                <Text style={styles.inputLabel}>A�rea</Text>
+                <Text style={styles.inputLabel}>Área</Text>
                 <ChipSelector
                   options={areaOptions}
                   value={selectedArea}
@@ -424,7 +424,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
 
             {formState.type === 'animal' && (
               <>
-                <Text style={styles.inputLabel}>EspA�cie</Text>
+                <Text style={styles.inputLabel}>Espécie</Text>
                 <ChipSelector
                   options={speciesOptions}
                   value={selectedSpecies}
@@ -476,7 +476,7 @@ const FormModal = ({ formState, setFormState, areas, enclosures, species, onRefr
                 />
                 <TextInput
                   style={[styles.input, styles.multilineInput]}
-                  placeholder="ObservaA�A�es"
+                  placeholder="Observações"
                   value={formValues.notes}
                   onChangeText={(text) => handleChange('notes', text)}
                   multiline
@@ -571,7 +571,7 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
 
           <TextInput
             style={[styles.input, styles.multilineInput, styles.modalInputSpacing]}
-            placeholder="ObservaA�A�es (opcional)"
+            placeholder="Observações (opcional)"
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -585,7 +585,7 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
             {isSubmitting ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.primaryButtonLabel}>Confirmar movimentaA�A�o</Text>
+              <Text style={styles.primaryButtonLabel}>Confirmar movimentação</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -648,8 +648,8 @@ const AnimalCatalogScreen = () => {
     (type, entity) => {
       const displayName = entity?.name || entity?.common_name || entity?.identifier || 'registro';
       Alert.alert(
-        'Confirmar remoA�A�o',
-        `Deseja remover ${displayName}? Essa aA�A�o nA�o poderA� ser desfeita.`,
+        'Confirmar remoção',
+        `Deseja remover ${displayName}? Essa ação não poderá ser desfeita.`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -675,7 +675,7 @@ const AnimalCatalogScreen = () => {
                 }
                 fetchCatalog();
               } catch (error) {
-                Alert.alert('NA�o foi possA�vel remover', error?.message || 'Tente novamente.');
+                Alert.alert('Não foi possível remover', error?.message || 'Tente novamente.');
               }
             },
           },
@@ -694,7 +694,7 @@ const AnimalCatalogScreen = () => {
     enclosures.forEach((enclosure) => {
       if (!map[enclosure.area_id]) {
         map[enclosure.area_id] = {
-          area: { id: enclosure.area_id, name: 'Sem A�rea definida' },
+          area: { id: enclosure.area_id, name: 'Sem área definida' },
           enclosures: [],
         };
       }
@@ -726,7 +726,7 @@ const AnimalCatalogScreen = () => {
       return (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loaderLabel}>Carregando catA�logo...</Text>
+          <Text style={styles.loaderLabel}>Carregando catálogo...</Text>
         </View>
       );
     }
@@ -760,20 +760,20 @@ const AnimalCatalogScreen = () => {
                 </View>
               </View>
               <Text style={styles.cardSubtitle}>
-                {area.description || 'Nenhum detalhe cadastrado para esta A�rea.'}
+                {area.description || 'Nenhum detalhe cadastrado para esta Área.'}
               </Text>
 
               <View style={styles.divider} />
 
               {areaEnclosures.length === 0 ? (
-                <Text style={styles.emptyMessage}>Nenhum recinto cadastrado nesta A�rea.</Text>
+                <Text style={styles.emptyMessage}>Nenhum recinto cadastrado nesta Área.</Text>
               ) : (
                 areaEnclosures.map((enclosure) => (
                   <View key={enclosure.id} style={styles.enclosureRow}>
                     <View style={styles.enclosureInfo}>
                       <Text style={styles.enclosureName}>{enclosure.name}</Text>
                       <Text style={styles.enclosureMeta}>
-                        CA�digo {enclosure.code || 'a��'} A� Capacidade{' '}
+                        Código {enclosure.code || 'a'} A Capacidade{' '}
                         {enclosure.capacity ? `${enclosure.capacity} animais` : 'indefinida'}
                       </Text>
                       {enclosure.environment_type ? (
@@ -836,12 +836,12 @@ const AnimalCatalogScreen = () => {
         <View>
           <SectionTitle
             icon="paw"
-            title="EspA�cies cadastradas"
-            actionLabel="Nova espA�cie"
+            title="Espécies cadastradas"
+            actionLabel="Nova espécie"
             onActionPress={() => setFormState({ visible: true, type: 'species', data: null })}
           />
           {species.length === 0 ? (
-            <Text style={styles.emptyMessage}>Nenhuma espA�cie cadastrada.</Text>
+            <Text style={styles.emptyMessage}>Nenhuma espécie cadastrada.</Text>
           ) : (
             species.map((specie) => (
               <View key={specie.id} style={styles.card}>
@@ -877,7 +877,7 @@ const AnimalCatalogScreen = () => {
                   </View>
                 </View>
                 <Text style={styles.cardSubtitle}>
-                  {specie.scientific_name || 'Nome cientA�fico nA�o informado.'}
+                  {specie.scientific_name || 'Nome científico não informado.'}
                 </Text>
                 <View style={styles.metaRow}>
                   {specie.conservation_status ? (
@@ -941,7 +941,7 @@ const AnimalCatalogScreen = () => {
                   </View>
                 </View>
                 <Text style={styles.cardSubtitle}>
-                  {animal.speciesData?.common_name || 'EspA�cie nA�o informada'}
+                  {animal.speciesData?.common_name || 'Espécie não informada'}
                 </Text>
                 <View style={styles.metaRow}>
                   {animal.identifier ? (
@@ -983,15 +983,15 @@ const AnimalCatalogScreen = () => {
     if (activeTab === 'history') {
       return (
         <View>
-          <SectionTitle icon="history" title="HistA�rico de movimentaA�A�es" />
+          <SectionTitle icon="history" title="Histórico de movimentações" />
           {history.length === 0 ? (
-            <Text style={styles.emptyMessage}>Nenhuma movimentaA�A�o registrada.</Text>
+            <Text style={styles.emptyMessage}>Nenhuma movimentação registrada.</Text>
           ) : (
             history.map((entry) => (
               <View key={entry.id} style={styles.card}>
                 <Text style={styles.cardTitle}>{entry.animal?.name || 'Animal'}</Text>
                 <Text style={styles.cardSubtitle}>
-                  {entry.from_enclosure?.name || 'Sem recinto'} a��{' '}
+                  {entry.from_enclosure?.name || 'Sem recinto'} a{' '}
                   {entry.to_enclosure?.name || 'Sem recinto'}
                 </Text>
                 <Text style={styles.historyDate}>
@@ -1011,9 +1011,9 @@ const AnimalCatalogScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.title}>CatA�logo de Animais & Recintos</Text>
+        <Text style={styles.title}>Catálogo de Animais & Recintos</Text>
         <Text style={styles.subtitle}>
-          Gerencie A�reas, recintos, espA�cies e acompanhe movimentaA�A�es em um sA� lugar.
+          Gerencie Áreas, recintos, espécies e acompanhe movimentações em um só lugar.
         </Text>
       </View>
 
