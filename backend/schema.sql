@@ -212,3 +212,78 @@ comment on table public.tasks is
 
 comment on table public.task_prerequisites is
   'Lista de dependencias entre tarefas para controle de ordem de execucao.';
+
+-- -----------------------------------------------------------------------------
+-- Autenticacao & RLS
+-- -----------------------------------------------------------------------------
+
+create or replace function public.current_user_role()
+returns text
+language sql
+stable
+as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claims', true)::json#>>'{user_metadata,role}', ''),
+    'staff'
+  );
+$$;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+as $$
+  select public.current_user_role() = 'admin';
+$$;
+
+alter table public.tasks enable row level security;
+alter table public.task_prerequisites enable row level security;
+
+create policy "Admins manage tasks"
+  on public.tasks
+  for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+create policy "Assigned users read tasks"
+  on public.tasks
+  for select
+  using (
+    public.is_admin()
+    or auth.uid() is not null and (assigned_to = auth.uid() or created_by = auth.uid())
+  );
+
+create policy "Assigned users update completion"
+  on public.tasks
+  for update
+  using (public.is_admin() or (auth.uid() is not null and assigned_to = auth.uid()))
+  with check (public.is_admin() or (auth.uid() is not null and assigned_to = auth.uid()));
+
+create policy "Admins insert tasks"
+  on public.tasks
+  for insert
+  with check (public.is_admin());
+
+create policy "Admins delete tasks"
+  on public.tasks
+  for delete
+  using (public.is_admin());
+
+create policy "Admins manage task prerequisites"
+  on public.task_prerequisites
+  for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+create policy "Assigned users read task prerequisites"
+  on public.task_prerequisites
+  for select
+  using (
+    public.is_admin()
+    or exists (
+      select 1
+      from public.tasks t
+      where t.id = task_prerequisites.task_id
+        and (t.assigned_to = auth.uid() or t.created_by = auth.uid())
+    )
+  );
