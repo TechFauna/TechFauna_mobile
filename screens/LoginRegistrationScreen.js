@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+<<<<<<< Updated upstream
 import {
   StyleSheet,
   View,
@@ -10,6 +11,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import supabase from '../config/supabaseClient';
+=======
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+>>>>>>> Stashed changes
 
 const COLORS = {
   cactusGreen: '#5A8B63',
@@ -20,7 +24,11 @@ const COLORS = {
 
 const FONT_STYLES = {
   title: {
+<<<<<<< Updated upstream
     fontFamily: 'Roboto',
+=======
+    fontFamily: 'Roboto', 
+>>>>>>> Stashed changes
     fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.darkGray,
@@ -32,13 +40,18 @@ const FONT_STYLES = {
   },
 };
 
+<<<<<<< Updated upstream
 const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
+=======
+const LoginRegistrationScreen = ({ navigation }) => {
+>>>>>>> Stashed changes
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
+<<<<<<< Updated upstream
   const [loading, setLoading] = useState(false);
 
   const handleAuth = async () => {
@@ -105,26 +118,49 @@ const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
       );
     } finally {
       setLoading(false);
+=======
+
+  const handleAuth = () => {
+    // Lógica para login ou registro aqui
+    if (isLoginMode) {
+      Alert.alert('Login', `Tentando entrar com: ${email} e senha.`);
+      // Navegação para a tela Home
+      // navigation.navigate('Home'); 
+    } else {
+      Alert.alert('Registro', `Registrando: ${name}, ${email}.`);
+      // Simula um registro e volta para o login
+      setIsLoginMode(true);
+>>>>>>> Stashed changes
     }
   };
 
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
+<<<<<<< Updated upstream
     setEmail('');
     setPassword('');
     setName('');
     setCompany('');
     setRole('');
+=======
+>>>>>>> Stashed changes
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={FONT_STYLES.title}>{isLoginMode ? 'Bem-vindo!' : 'Criar Conta'}</Text>
+<<<<<<< Updated upstream
       <Text style={styles.subtitle}>
         {isLoginMode ? 'Faca login para continuar.' : 'Preencha os campos para se registrar.'}
       </Text>
 
       <View style={styles.formContainer}>
+=======
+      <Text style={styles.subtitle}>{isLoginMode ? 'Faça login para continuar.' : 'Preencha os campos para se registrar.'}</Text>
+
+      <View style={styles.formContainer}>
+        {/* Campos do formulário de Registro */}
+>>>>>>> Stashed changes
         {!isLoginMode && (
           <>
             <TextInput
@@ -143,7 +179,11 @@ const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
             />
             <TextInput
               style={styles.input}
+<<<<<<< Updated upstream
               placeholder="Funcao"
+=======
+              placeholder="Função"
+>>>>>>> Stashed changes
               placeholderTextColor={COLORS.gray}
               value={role}
               onChangeText={setRole}
@@ -151,6 +191,10 @@ const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
           </>
         )}
 
+<<<<<<< Updated upstream
+=======
+        {/* Campos comuns a ambos */}
+>>>>>>> Stashed changes
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -158,7 +202,10 @@ const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
+<<<<<<< Updated upstream
           autoCapitalize="none"
+=======
+>>>>>>> Stashed changes
         />
         <TextInput
           style={styles.input}
@@ -169,6 +216,7 @@ const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
           onChangeText={setPassword}
         />
 
+<<<<<<< Updated upstream
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleAuth}
@@ -184,6 +232,15 @@ const LoginRegistrationScreen = ({ navigation, onLoginSuccess }) => {
         <TouchableOpacity onPress={toggleMode} disabled={loading}>
           <Text style={styles.toggleText}>
             {isLoginMode ? 'Nao tem uma conta? Registre-se.' : 'Ja tem uma conta? Entrar.'}
+=======
+        <TouchableOpacity style={styles.button} onPress={handleAuth}>
+          <Text style={styles.buttonText}>{isLoginMode ? 'Entrar' : 'Registrar'}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={toggleMode}>
+          <Text style={styles.toggleText}>
+            {isLoginMode ? 'Não tem uma conta? Registre-se.' : 'Já tem uma conta? Entrar.'}
+>>>>>>> Stashed changes
           </Text>
         </TouchableOpacity>
       </View>
@@ -224,9 +281,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
+<<<<<<< Updated upstream
   buttonDisabled: {
     opacity: 0.6,
   },
+=======
+>>>>>>> Stashed changes
   buttonText: {
     color: 'white',
     ...FONT_STYLES.title,
@@ -240,4 +300,8 @@ const styles = StyleSheet.create({
   },
 });
 
+<<<<<<< Updated upstream
 export default LoginRegistrationScreen;
+=======
+export default LoginRegistrationScreen;
+>>>>>>> Stashed changes
