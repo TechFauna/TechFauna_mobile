@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< Updated upstream
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
 import { handleQRCodeData } from '../utils/qrCodeHandler';
-=======
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
->>>>>>> Stashed changes
 
 const COLORS = {
   cactusGreen: '#5A8B63',
@@ -31,7 +27,6 @@ const FONT_STYLES = {
 const QRCodeScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [isFlashOn, setIsFlashOn] = useState(false);
-<<<<<<< Updated upstream
   const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
@@ -66,30 +61,10 @@ const QRCodeScreen = ({ navigation }) => {
         ]
       );
     }, 1000); // Delay para permitir que outros alertas sejam mostrados primeiro
-=======
-
-  useEffect(() => {
-    (async () => {
-      // Solicita permissão da câmera ao montar a tela
-      // const { status } = await Camera.requestCameraPermissionsAsync();
-      // setHasPermission(status === 'granted');
-      
-      // Simulação da permissão para fins de demonstração
-      setHasPermission(true); 
-    })();
-  }, []);
-
-  const handleScan = () => {
-    Alert.alert('Escanear', 'A função de escanear o QR Code seria ativada agora.');
->>>>>>> Stashed changes
   };
 
   const toggleFlash = () => {
     setIsFlashOn(prev => !prev);
-<<<<<<< Updated upstream
-=======
-    Alert.alert('Flash', `Flash ${isFlashOn ? 'Desligado' : 'Ligado'}`);
->>>>>>> Stashed changes
   };
 
   if (hasPermission === null) {
@@ -108,7 +83,6 @@ const QRCodeScreen = ({ navigation }) => {
   }
 
   return (
-<<<<<<< Updated upstream
     <View style={styles.container}>
       <Text style={FONT_STYLES.title}>Escanear QR Code</Text>
 
@@ -137,38 +111,19 @@ const QRCodeScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>
             {scanned ? 'Escanear Novamente' : 'Escaneando...'}
           </Text>
-=======
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={FONT_STYLES.title}>Escanear QR Code</Text>
-      <View style={styles.cameraView}>
-        <View style={styles.cameraPlaceholder} />
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleScan}>
-          <Text style={styles.buttonText}>Escanear</Text>
->>>>>>> Stashed changes
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={toggleFlash}>
           <Text style={styles.buttonText}>{isFlashOn ? 'Flash Off' : 'Flash On'}</Text>
         </TouchableOpacity>
       </View>
-<<<<<<< Updated upstream
     </View>
-=======
-    </ScrollView>
->>>>>>> Stashed changes
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-<<<<<<< Updated upstream
     flex: 1,
-=======
-    flexGrow: 1,
->>>>>>> Stashed changes
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.iceWhite,
@@ -178,7 +133,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-<<<<<<< Updated upstream
     backgroundColor: COLORS.iceWhite,
     padding: 20,
   },
@@ -207,22 +161,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'transparent',
   },
-=======
-  },
-  cameraView: {
-    width: '100%',
-    aspectRatio: 1,
-    backgroundColor: COLORS.darkGray,
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  cameraPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
->>>>>>> Stashed changes
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -235,25 +173,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 8,
     alignItems: 'center',
-<<<<<<< Updated upstream
     minWidth: 120,
   },
   buttonDisabled: {
     backgroundColor: COLORS.gray,
-=======
->>>>>>> Stashed changes
   },
   buttonText: {
     color: 'white',
     ...FONT_STYLES.text,
-<<<<<<< Updated upstream
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
-=======
-    fontSize: 18,
-    fontWeight: 'bold',
->>>>>>> Stashed changes
   },
 });
 

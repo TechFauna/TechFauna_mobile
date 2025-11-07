@@ -2,9 +2,9 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeStack from './HomeStack';
+import ProfileStack from './ProfileStack';
 import ChecklistScreen from '../screens/ChecklistScreen';
 import QRCodeScreen from '../screens/QRCodeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -46,7 +46,7 @@ export default function MainTabs({ onLogout }) {
       <Tab.Screen name="Checklist" component={ChecklistScreen} />
       <Tab.Screen name="QR Code" component={QRCodeScreen} />
       <Tab.Screen name="Perfil" options={{ title: 'Perfil' }}>
-        {(props) => <ProfileScreen {...props} onLogout={onLogout} />}
+        {(props) => <ProfileStack {...props} onLogout={onLogout} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
