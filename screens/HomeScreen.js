@@ -218,7 +218,7 @@ const HomeScreen = ({ navigation }) => {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Ola, {displayName}</Text>
+            <Text style={styles.greeting}>Olá, {displayName}</Text>
             <Text style={styles.subGreeting}>{date}</Text>
             <Text style={styles.subGreeting}>{time}</Text>
           </View>

@@ -30,15 +30,8 @@ export const getCurrentUserOrganizationId = async () => {
       return null;
     }
 
-    console.log('[getCurrentUserOrganizationId] user.user_metadata:', JSON.stringify(user.user_metadata));
-
-    // Tenta primeiro do user_metadata (mais rápido)
-    if (user.user_metadata?.organization_id) {
-      console.log('[getCurrentUserOrganizationId] Retornando do metadata:', user.user_metadata.organization_id);
-      return user.user_metadata.organization_id;
-    }
-
-    // Se não tiver, busca do profile
+    // SEMPRE busca do profile primeiro (fonte de verdade)
+    // Isso garante que ao remover um usuário da organização, ele perde acesso imediatamente
     console.log('[getCurrentUserOrganizationId] Buscando do profile para user.id:', user.id);
 
     const { data: profile, error: profileError } = await supabase
@@ -50,11 +43,24 @@ export const getCurrentUserOrganizationId = async () => {
     console.log('[getCurrentUserOrganizationId] profileError:', profileError);
     console.log('[getCurrentUserOrganizationId] profile:', JSON.stringify(profile));
 
-    const orgId = profile?.organization_id || null;
-    console.log('[getCurrentUserOrganizationId] organization_id final:', orgId);
+    // Se encontrou no profile, usa esse valor (mesmo que seja null)
+    if (!profileError && profile) {
+      const orgId = profile.organization_id || null;
+      console.log('[getCurrentUserOrganizationId] organization_id do profile:', orgId);
+      return orgId;
+    }
+
+    // Fallback para user_metadata apenas se não conseguir buscar do profile
+    console.log('[getCurrentUserOrganizationId] user.user_metadata:', JSON.stringify(user.user_metadata));
+    if (user.user_metadata?.organization_id) {
+      console.log('[getCurrentUserOrganizationId] Fallback para metadata:', user.user_metadata.organization_id);
+      return user.user_metadata.organization_id;
+    }
+
+    console.log('[getCurrentUserOrganizationId] organization_id final: null');
     console.log('[getCurrentUserOrganizationId] ========== FIM ==========');
 
-    return orgId;
+    return null;
   } catch (err) {
     console.log('[getCurrentUserOrganizationId] ERRO CATCH:', err);
     return null;
@@ -81,6 +87,12 @@ const guessContentType = (uri) => {
 
 export const listAnimalsByEnclosure = async (enclosureId) => {
   const orgId = await getCurrentUserOrganizationId();
+
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
+  }
+
   let query = supabase
     .from('animals')
     .select(
@@ -97,11 +109,8 @@ export const listAnimalsByEnclosure = async (enclosureId) => {
     `
     )
     .eq('current_enclosure_id', enclosureId)
+    .eq('organization_id', orgId)
     .order('name', { ascending: true });
-
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
-  }
 
   return withErrorHandling(query, 'Falha ao carregar os animais do recinto.');
 };
@@ -135,11 +144,13 @@ const uploadMedia = async ({ uri, bucket, prefix }) => {
 
 export const listAreas = async () => {
   const orgId = await getCurrentUserOrganizationId();
-  let query = supabase.from('areas').select('*').order('name', { ascending: true });
 
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
   }
+
+  let query = supabase.from('areas').select('*').eq('organization_id', orgId).order('name', { ascending: true });
 
   return withErrorHandling(query, 'Falha ao carregar as áreas.');
 };
@@ -170,14 +181,17 @@ export const deleteArea = async (id) =>
 
 export const listEnclosures = async () => {
   const orgId = await getCurrentUserOrganizationId();
+
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
+  }
+
   let query = supabase
     .from('enclosures')
     .select('*, area:area_id (id, name)')
+    .eq('organization_id', orgId)
     .order('name', { ascending: true });
-
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
-  }
 
   return withErrorHandling(query, 'Falha ao carregar os recintos.');
 };
@@ -215,16 +229,19 @@ export const updateEnclosureLocation = async (id, latitude, longitude) =>
 
 export const listEnclosuresWithLocation = async () => {
   const orgId = await getCurrentUserOrganizationId();
+
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
+  }
+
   let query = supabase
     .from('enclosures')
     .select('*, area:area_id (id, name)')
+    .eq('organization_id', orgId)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .order('name', { ascending: true });
-
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
-  }
 
   return withErrorHandling(query, 'Falha ao carregar os recintos com localização.');
 };
@@ -235,11 +252,13 @@ export const listEnclosuresWithLocation = async () => {
 
 export const listSpecies = async () => {
   const orgId = await getCurrentUserOrganizationId();
-  let query = supabase.from('species').select('*').order('common_name', { ascending: true });
 
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
   }
+
+  let query = supabase.from('species').select('*').eq('organization_id', orgId).order('common_name', { ascending: true });
 
   return withErrorHandling(query, 'Falha ao carregar as espécies.');
 };
@@ -270,6 +289,12 @@ export const deleteSpecies = async (id) =>
 
 export const listAnimals = async () => {
   const orgId = await getCurrentUserOrganizationId();
+
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
+  }
+
   let query = supabase
     .from('animals')
     .select(
@@ -289,11 +314,8 @@ export const listAnimals = async () => {
       )
     `
     )
+    .eq('organization_id', orgId)
     .order('name', { ascending: true });
-
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
-  }
 
   return withErrorHandling(query, 'Falha ao carregar os animais.');
 };
@@ -446,6 +468,12 @@ export const listAnimalHistory = async () =>
 
 export const listChecklistTemplates = async () => {
   const orgId = await getCurrentUserOrganizationId();
+
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
+  }
+
   let query = supabase
     .from('checklist_templates')
     .select(
@@ -460,11 +488,8 @@ export const listChecklistTemplates = async () => {
       )
     `
     )
+    .eq('organization_id', orgId)
     .order('title', { ascending: true });
-
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
-  }
 
   return withErrorHandling(query, 'Falha ao carregar os templates de checklist.');
 };
@@ -569,6 +594,12 @@ export const deleteChecklistTemplate = async (id) =>
 
 export const listChecklists = async ({ performedBy }) => {
   const orgId = await getCurrentUserOrganizationId();
+
+  // Se não tem organização, retorna lista vazia
+  if (!orgId) {
+    return [];
+  }
+
   let query = supabase
     .from('checklists')
     .select(
@@ -592,11 +623,8 @@ export const listChecklists = async ({ performedBy }) => {
       )
     `
     )
+    .eq('organization_id', orgId)
     .order('performed_at', { ascending: false });
-
-  if (orgId) {
-    query = query.eq('organization_id', orgId);
-  }
 
   if (performedBy) {
     query = query.eq('performed_by', performedBy);
