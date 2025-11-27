@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthStack from './navigation/AuthStack';
 import MainTabs from './navigation/MainTabs';
 import supabase from './config/supabaseClient';
@@ -67,10 +68,27 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
+      // Primeiro limpa o estado local
+      setUser(null);
+      setSession(null);
+
+      // Faz signOut no Supabase
       await supabase.auth.signOut();
+
+      // Limpa manualmente as chaves de autenticação do AsyncStorage
+      // para garantir que não há dados residuais
+      const keys = await AsyncStorage.getAllKeys();
+      const authKeys = keys.filter(key =>
+        key.includes('supabase') ||
+        key.includes('sb-') ||
+        key.includes('auth')
+      );
+      if (authKeys.length > 0) {
+        await AsyncStorage.multiRemove(authKeys);
+      }
     } catch (error) {
       console.warn('Erro ao realizar logout:', error?.message);
-    } finally {
+      // Mesmo com erro, garante que o estado local está limpo
       setUser(null);
       setSession(null);
     }

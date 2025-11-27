@@ -3,7 +3,9 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -88,7 +90,10 @@ const CompleteTaskModal = ({ state, setState, onComplete }) => {
 
   return (
     <Modal visible={state.visible} animationType="slide" transparent onRequestClose={reset}>
-      <View style={styles.modalBackdrop}>
+      <KeyboardAvoidingView
+        style={styles.modalBackdrop}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <View style={styles.modalCard}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>
@@ -99,7 +104,10 @@ const CompleteTaskModal = ({ state, setState, onComplete }) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalContent}>
+          <ScrollView
+            contentContainerStyle={styles.modalContent}
+            keyboardShouldPersistTaps="handled"
+          >
             <TextInput
               style={[styles.input, styles.multilineInput]}
               placeholder="Notas da conclusao (opcional)"
@@ -130,7 +138,7 @@ const CompleteTaskModal = ({ state, setState, onComplete }) => {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

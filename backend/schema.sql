@@ -37,6 +37,8 @@ create table if not exists public.enclosures (
   capacity integer check (capacity is null or capacity >= 0),
   status text not null default 'ativo',
   notes text,
+  latitude double precision,
+  longitude double precision,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );

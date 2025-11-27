@@ -16,6 +16,51 @@ const withErrorHandling = async (promise, defaultMessage) => {
   return data;
 };
 
+// Função para obter o organization_id do usuário logado
+export const getCurrentUserOrganizationId = async () => {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    console.log('[getCurrentUserOrganizationId] ========== INICIO ==========');
+    console.log('[getCurrentUserOrganizationId] userError:', userError);
+    console.log('[getCurrentUserOrganizationId] user:', user ? user.id : 'NULL');
+
+    if (userError || !user) {
+      console.log('[getCurrentUserOrganizationId] Usuário não logado ou erro');
+      return null;
+    }
+
+    console.log('[getCurrentUserOrganizationId] user.user_metadata:', JSON.stringify(user.user_metadata));
+
+    // Tenta primeiro do user_metadata (mais rápido)
+    if (user.user_metadata?.organization_id) {
+      console.log('[getCurrentUserOrganizationId] Retornando do metadata:', user.user_metadata.organization_id);
+      return user.user_metadata.organization_id;
+    }
+
+    // Se não tiver, busca do profile
+    console.log('[getCurrentUserOrganizationId] Buscando do profile para user.id:', user.id);
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single();
+
+    console.log('[getCurrentUserOrganizationId] profileError:', profileError);
+    console.log('[getCurrentUserOrganizationId] profile:', JSON.stringify(profile));
+
+    const orgId = profile?.organization_id || null;
+    console.log('[getCurrentUserOrganizationId] organization_id final:', orgId);
+    console.log('[getCurrentUserOrganizationId] ========== FIM ==========');
+
+    return orgId;
+  } catch (err) {
+    console.log('[getCurrentUserOrganizationId] ERRO CATCH:', err);
+    return null;
+  }
+};
+
 const guessContentType = (uri) => {
   if (!uri) return 'image/jpeg';
   const extension = uri.split('.').pop()?.toLowerCase();
@@ -34,27 +79,32 @@ const guessContentType = (uri) => {
   }
 };
 
-export const listAnimalsByEnclosure = async (enclosureId) =>
-  withErrorHandling(
-    supabase
-      .from('animals')
-      .select(
-        `
-        *,
-        species:species_id (
-          id,
-          common_name
-        ),
-        enclosure:current_enclosure_id (
-          id,
-          name
-        )
+export const listAnimalsByEnclosure = async (enclosureId) => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase
+    .from('animals')
+    .select(
       `
+      *,
+      species:species_id (
+        id,
+        common_name
+      ),
+      enclosure:current_enclosure_id (
+        id,
+        name
       )
-      .eq('current_enclosure_id', enclosureId) // O filtro principal
-      .order('name', { ascending: true }),
-    'Falha ao carregar os animais do recinto.'
-  );
+    `
+    )
+    .eq('current_enclosure_id', enclosureId)
+    .order('name', { ascending: true });
+
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar os animais do recinto.');
+};
 
 const uploadMedia = async ({ uri, bucket, prefix }) => {
   if (!uri) return null;
@@ -83,17 +133,24 @@ const uploadMedia = async ({ uri, bucket, prefix }) => {
 // Áreas
 // -----------------------------------------------------------------------------
 
-export const listAreas = async () =>
-  withErrorHandling(
-    supabase.from('areas').select('*').order('name', { ascending: true }),
-    'Falha ao carregar as áreas.'
-  );
+export const listAreas = async () => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase.from('areas').select('*').order('name', { ascending: true });
 
-export const createArea = async (payload) =>
-  withErrorHandling(
-    supabase.from('areas').insert([{ ...payload }]).select().single(),
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar as áreas.');
+};
+
+export const createArea = async (payload) => {
+  const orgId = await getCurrentUserOrganizationId();
+  return withErrorHandling(
+    supabase.from('areas').insert([{ ...payload, organization_id: orgId }]).select().single(),
     'Não foi possível criar a área.'
   );
+};
 
 export const updateArea = async (id, payload) =>
   withErrorHandling(
@@ -111,20 +168,27 @@ export const deleteArea = async (id) =>
 // Recintos
 // -----------------------------------------------------------------------------
 
-export const listEnclosures = async () =>
-  withErrorHandling(
-    supabase
-      .from('enclosures')
-      .select('*, area:area_id (id, name)')
-      .order('name', { ascending: true }),
-    'Falha ao carregar os recintos.'
-  );
+export const listEnclosures = async () => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase
+    .from('enclosures')
+    .select('*, area:area_id (id, name)')
+    .order('name', { ascending: true });
 
-export const createEnclosure = async (payload) =>
-  withErrorHandling(
-    supabase.from('enclosures').insert([{ ...payload }]).select().single(),
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar os recintos.');
+};
+
+export const createEnclosure = async (payload) => {
+  const orgId = await getCurrentUserOrganizationId();
+  return withErrorHandling(
+    supabase.from('enclosures').insert([{ ...payload, organization_id: orgId }]).select().single(),
     'Não foi possível criar o recinto.'
   );
+};
 
 export const updateEnclosure = async (id, payload) =>
   withErrorHandling(
@@ -138,21 +202,55 @@ export const deleteEnclosure = async (id) =>
     'Não foi possível remover o recinto.'
   );
 
+export const updateEnclosureLocation = async (id, latitude, longitude) =>
+  withErrorHandling(
+    supabase
+      .from('enclosures')
+      .update({ latitude, longitude })
+      .eq('id', id)
+      .select('*, area:area_id (id, name)')
+      .single(),
+    'Não foi possível atualizar a localização do recinto.'
+  );
+
+export const listEnclosuresWithLocation = async () => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase
+    .from('enclosures')
+    .select('*, area:area_id (id, name)')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .order('name', { ascending: true });
+
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar os recintos com localização.');
+};
+
 // -----------------------------------------------------------------------------
 // Espécies
 // -----------------------------------------------------------------------------
 
-export const listSpecies = async () =>
-  withErrorHandling(
-    supabase.from('species').select('*').order('common_name', { ascending: true }),
-    'Falha ao carregar as espécies.'
-  );
+export const listSpecies = async () => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase.from('species').select('*').order('common_name', { ascending: true });
 
-export const createSpecies = async (payload) =>
-  withErrorHandling(
-    supabase.from('species').insert([{ ...payload }]).select().single(),
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar as espécies.');
+};
+
+export const createSpecies = async (payload) => {
+  const orgId = await getCurrentUserOrganizationId();
+  return withErrorHandling(
+    supabase.from('species').insert([{ ...payload, organization_id: orgId }]).select().single(),
     'Não foi possível criar a espécie.'
   );
+};
 
 export const updateSpecies = async (id, payload) =>
   withErrorHandling(
@@ -170,34 +268,42 @@ export const deleteSpecies = async (id) =>
 // Animais
 // -----------------------------------------------------------------------------
 
-export const listAnimals = async () =>
-  withErrorHandling(
-    supabase
-      .from('animals')
-      .select(
-        `
-        *,
-        species:species_id (
-          id,
-          common_name,
-          scientific_name,
-          conservation_status
-        ),
-        enclosure:current_enclosure_id (
-          id,
-          name,
-          code,
-          area_id
-        )
+export const listAnimals = async () => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase
+    .from('animals')
+    .select(
       `
+      *,
+      species:species_id (
+        id,
+        common_name,
+        scientific_name,
+        conservation_status
+      ),
+      enclosure:current_enclosure_id (
+        id,
+        name,
+        code,
+        area_id
       )
-      .order('name', { ascending: true }),
-    'Falha ao carregar os animais.'
-  );
+    `
+    )
+    .order('name', { ascending: true });
+
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar os animais.');
+};
 
 export const createAnimal = async (payload) => {
   const { photoUri, ...rest } = payload;
   let photoUrl = payload.photo_url || null;
+  const orgId = await getCurrentUserOrganizationId();
+
+  console.log('[createAnimal] organization_id a ser usado:', orgId);
 
   if (photoUri) {
     photoUrl = await uploadMedia({
@@ -207,10 +313,13 @@ export const createAnimal = async (payload) => {
     });
   }
 
+  const insertData = { ...rest, photo_url: photoUrl, organization_id: orgId };
+  console.log('[createAnimal] Dados a inserir:', JSON.stringify(insertData));
+
   return withErrorHandling(
     supabase
       .from('animals')
-      .insert([{ ...rest, photo_url: photoUrl }])
+      .insert([insertData])
       .select(
         `
         *,
@@ -335,31 +444,37 @@ export const listAnimalHistory = async () =>
 // Templates de Checklist
 // -----------------------------------------------------------------------------
 
-export const listChecklistTemplates = async () =>
-  withErrorHandling(
-    supabase
-      .from('checklist_templates')
-      .select(
-        `
-        *,
-        items:checklist_template_items (
-          id,
-          description,
-          requires_photo,
-          sort_order,
-          instructions
-        )
+export const listChecklistTemplates = async () => {
+  const orgId = await getCurrentUserOrganizationId();
+  let query = supabase
+    .from('checklist_templates')
+    .select(
       `
+      *,
+      items:checklist_template_items (
+        id,
+        description,
+        requires_photo,
+        sort_order,
+        instructions
       )
-      .order('title', { ascending: true }),
-    'Falha ao carregar os templates de checklist.'
-  );
+    `
+    )
+    .order('title', { ascending: true });
+
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
+  return withErrorHandling(query, 'Falha ao carregar os templates de checklist.');
+};
 
 export const createChecklistTemplate = async (payload) => {
   const { items = [], ...template } = payload;
+  const orgId = await getCurrentUserOrganizationId();
 
   const createdTemplate = await withErrorHandling(
-    supabase.from('checklist_templates').insert([{ ...template }]).select().single(),
+    supabase.from('checklist_templates').insert([{ ...template, organization_id: orgId }]).select().single(),
     'Não foi possível criar o template de checklist.'
   );
 
@@ -453,12 +568,13 @@ export const deleteChecklistTemplate = async (id) =>
 // -----------------------------------------------------------------------------
 
 export const listChecklists = async ({ performedBy }) => {
+  const orgId = await getCurrentUserOrganizationId();
   let query = supabase
     .from('checklists')
     .select(
       `
       *,
-      performer:performed_by (
+      performer:profiles!checklists_performed_by_fkey (
         id,
         email
       ),
@@ -478,6 +594,10 @@ export const listChecklists = async ({ performedBy }) => {
     )
     .order('performed_at', { ascending: false });
 
+  if (orgId) {
+    query = query.eq('organization_id', orgId);
+  }
+
   if (performedBy) {
     query = query.eq('performed_by', performedBy);
   }
@@ -493,6 +613,7 @@ export const createChecklistExecution = async ({
   notes,
   items,
 }) => {
+  const orgId = await getCurrentUserOrganizationId();
   const created = await withErrorHandling(
     supabase
       .from('checklists')
@@ -503,6 +624,7 @@ export const createChecklistExecution = async ({
           enclosure_id: enclosureId || null,
           species_id: speciesId || null,
           notes: notes || null,
+          organization_id: orgId,
         },
       ])
       .select()
@@ -552,11 +674,11 @@ export const listTasks = async ({ assignedTo, status }) => {
     .select(
       `
       *,
-      assigned_user:assigned_to (
+      assigned_user:profiles!tasks_assigned_to_fkey (
         id,
         email
       ),
-      creator:created_by (
+      creator:profiles!tasks_created_by_fkey (
         id,
         email
       ),
@@ -585,6 +707,7 @@ export const listTasks = async ({ assignedTo, status }) => {
     )
     .order('due_at', { ascending: true, nullsFirst: false });
 
+  // Tarefas são filtradas por assigned_to (usuário responsável), não por organization_id
   if (assignedTo) {
     query = query.eq('assigned_to', assignedTo);
   }
@@ -599,6 +722,7 @@ export const listTasks = async ({ assignedTo, status }) => {
 export const createTask = async (payload) => {
   const { photoUri, prerequisites = [], ...task } = payload;
   let completionPhotoUrl = task.completion_photo_url || null;
+  const orgId = await getCurrentUserOrganizationId();
 
   if (photoUri) {
     completionPhotoUrl = await uploadMedia({
@@ -615,6 +739,7 @@ export const createTask = async (payload) => {
         {
           ...task,
           completion_photo_url: completionPhotoUrl,
+          organization_id: orgId,
         },
       ])
       .select()
@@ -644,7 +769,7 @@ export const listTaskById = async (id) =>
       .select(
         `
         *,
-        assigned_user:assigned_to (
+        assigned_user:profiles!tasks_assigned_to_fkey (
           id,
           email
         ),

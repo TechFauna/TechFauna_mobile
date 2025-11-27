@@ -129,6 +129,7 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   const [checklists, setChecklists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [organizationName, setOrganizationName] = useState('');
 
   const userName =
     user?.user_metadata?.name ||
@@ -137,7 +138,6 @@ const ProfileScreen = ({ navigation, onLogout }) => {
     'Colaborador';
 
   const role = user?.user_metadata?.role || 'Equipe TechFauna';
-  const company = user?.user_metadata?.company || 'TechFauna';
 
   const fetchProfileData = useCallback(async () => {
     setLoading(true);
@@ -149,6 +149,23 @@ const ProfileScreen = ({ navigation, onLogout }) => {
 
       setTasks(tasksData || []);
       setChecklists(checklistsData || []);
+
+      // Busca o nome da organização do usuário
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (profile?.organization_id) {
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('name')
+          .eq('id', profile.organization_id)
+          .single();
+
+        setOrganizationName(org?.name || '');
+      }
     } catch (error) {
       Alert.alert('Falha ao carregar dados', error?.message || 'Tente novamente mais tarde.');
     } finally {
@@ -243,8 +260,10 @@ const ProfileScreen = ({ navigation, onLogout }) => {
             <Text style={styles.avatarText}>{userName?.[0]?.toUpperCase() || 'T'}</Text>
           </View>
           <Text style={styles.userName}>{userName}</Text>
+          {organizationName ? (
+            <Text style={styles.companyName}>{organizationName}</Text>
+          ) : null}
           <Text style={styles.userMeta}>{role}</Text>
-          <Text style={styles.userMeta}>{company}</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
         </View>
 
@@ -369,6 +388,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: COLORS.text,
+  },
+  companyName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginTop: 4,
   },
   userMeta: {
     fontSize: 14,

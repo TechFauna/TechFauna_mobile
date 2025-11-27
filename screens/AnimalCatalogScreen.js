@@ -594,7 +594,8 @@ const MoveAnimalModal = ({ moveState, setMoveState, enclosures, onRefresh }) => 
   );
 };
 
-const AnimalCatalogScreen = () => {
+const AnimalCatalogScreen = ({ route }) => {
+  const initialTab = route?.params?.initialTab || 'overview';
   const [areas, setAreas] = useState([]);
   const [enclosures, setEnclosures] = useState([]);
   const [species, setSpecies] = useState([]);
@@ -602,7 +603,7 @@ const AnimalCatalogScreen = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [formState, setFormState] = useState(initialFormState);
   const [moveState, setMoveState] = useState(initialMoveState);
 

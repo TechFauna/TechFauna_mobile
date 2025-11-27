@@ -1,5 +1,6 @@
 import { Alert } from 'react-native';
-import { supabase } from '../config/supabaseClient';
+import { CommonActions } from '@react-navigation/native';
+import supabase from '../config/supabaseClient';
 
 /**
  * Manipula os dados escaneados do QR Code
@@ -55,17 +56,19 @@ const handleTechFaunaQRCode = async (qrData, navigation) => {
   switch (action) {
     case 'viewAnimal':
       return await navigateToAnimal(actionData.animalId, navigation);
-    
-    // --- MODIFICAÇÃO SUGERIDA: Adicionar ação para ver recinto ---
+
     case 'viewEnclosure':
       return await navigateToEnclosure(actionData.enclosureId, actionData.name, navigation);
 
+    case 'viewSpecies':
+      return await navigateToSpecies(actionData.speciesId, actionData.name, navigation);
+
     case 'addToChecklist':
       return await addToChecklist(actionData.speciesId, actionData.location);
-    
+
     case 'shareLocation':
       return await handleLocationShare(actionData.coordinates, navigation);
-    
+
     default:
       Alert.alert(
         'QR Code TechFauna',
@@ -158,35 +161,70 @@ const navigateToAnimal = async (animalId, navigation) => {
 };
 
 /**
- * --- NOVA FUNÇÃO ---
- * Busca animais de um recinto e navega para a tela de lista
+ * Busca recinto e navega para a tela de detalhes
  */
 const navigateToEnclosure = async (enclosureId, enclosureName, navigation) => {
   try {
-    // Busca todos os animais que estão NESTE recinto
-    const { data: animals, error } = await supabase
-      .from('animals')
-      .select('*, species:species_id(common_name)') // Pega o nome da espécie
-      .eq('current_enclosure_id', enclosureId);
+    // Busca o recinto no Supabase
+    const { data: enclosure, error } = await supabase
+      .from('enclosures')
+      .select('*, area:area_id(name)')
+      .eq('id', enclosureId)
+      .single();
 
     if (error) throw error;
 
-    if (animals && animals.length > 0) {
-      // Navega para uma NOVA TELA que você precisará criar
-      // Esta tela deve ser capaz de receber 'animals' (um array) e exibi-los
-      navigation.navigate('EnclosureAnimalList', { 
-        animals: animals, 
-        enclosureName: enclosureName || 'Animais do Recinto' 
-      });
+    if (enclosure) {
+      // Navega para a tela de detalhes do recinto usando CommonActions
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'Home',
+          params: {
+            screen: 'EnclosureDetail',
+            params: { enclosure }
+          }
+        })
+      );
     } else {
-      Alert.alert('Recinto Vazio', 'Nenhum animal encontrado neste recinto.');
+      Alert.alert('Erro', 'Recinto não encontrado.');
     }
   } catch (error) {
-    console.error('Erro ao buscar animais do recinto:', error);
+    console.error('Erro ao buscar recinto:', error);
     Alert.alert('Erro', 'Não foi possível carregar os dados do recinto.');
   }
 };
 
+/**
+ * Busca espécie e navega para a tela de detalhes
+ */
+const navigateToSpecies = async (speciesId, speciesName, navigation) => {
+  try {
+    const { data: species, error } = await supabase
+      .from('species')
+      .select('*')
+      .eq('id', speciesId)
+      .single();
+
+    if (error) throw error;
+
+    if (species) {
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'Home',
+          params: {
+            screen: 'SpeciesDetail',
+            params: { species }
+          }
+        })
+      );
+    } else {
+      Alert.alert('Erro', 'Espécie não encontrada.');
+    }
+  } catch (error) {
+    console.error('Erro ao buscar espécie:', error);
+    Alert.alert('Erro', 'Não foi possível carregar os dados da espécie.');
+  }
+};
 
 /**
  * Adiciona espécie à checklist do usuário (Função Original)
