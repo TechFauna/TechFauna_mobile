@@ -132,25 +132,30 @@ const handleAnimalQRCode = async (qrData, navigation) => {
 };
 
 /**
- * Navega para a tela de detalhes do animal (Função Original)
+ * Navega para a tela de detalhes do animal
  */
 const navigateToAnimal = async (animalId, navigation) => {
   try {
     // Busca dados do animal no Supabase
     const { data: animal, error } = await supabase
       .from('animals')
-      .select('*, species:species_id(*), enclosure:current_enclosure_id(*)') // Query melhorada para incluir relações
+      .select('*, species:species_id(*), enclosure:current_enclosure_id(*)')
       .eq('id', animalId)
       .single();
 
     if (error) throw error;
 
     if (animal) {
-      // Navega para a tela de detalhes do animal
-      // **Atenção**: O código original navegava para 'AnimalDetails'. 
-      // Se sua tela for a 'AnimalCatalogScreen', ajuste aqui.
-      // Vou manter 'AnimalDetails' como no original.
-      navigation.navigate('AnimalDetails', { animal }); 
+      // Navega para a tela de detalhes do animal usando CommonActions
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'Home',
+          params: {
+            screen: 'AnimalDetail',
+            params: { animal }
+          }
+        })
+      );
     } else {
       Alert.alert('Erro', 'Animal não encontrado.');
     }

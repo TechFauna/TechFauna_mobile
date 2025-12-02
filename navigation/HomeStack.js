@@ -9,6 +9,7 @@ import AnimalsListScreen from '../screens/AnimalsListScreen';
 import AnimalDetailScreen from '../screens/AnimalDetailScreen';
 import SpeciesListScreen from '../screens/SpeciesListScreen';
 import SpeciesDetailScreen from '../screens/SpeciesDetailScreen';
+import QRCodeGeneratorScreen from '../screens/QRCodeGeneratorScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -82,6 +83,14 @@ export default function HomeStack() {
         options={{
           headerShown: true,
           headerTitle: 'Mapa de Localização',
+        }}
+      />
+      <Stack.Screen
+        name="QRCodeGenerator"
+        component={QRCodeGeneratorScreen}
+        options={{
+          headerShown: true,
+          headerTitle: 'Gerar QR Code',
         }}
       />
     </Stack.Navigator>

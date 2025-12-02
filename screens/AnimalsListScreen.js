@@ -100,6 +100,15 @@ const AnimalsListScreen = ({ navigation }) => {
           </View>
         }
       />
+
+      {/* Botão flutuante para gerar QR Code */}
+      <TouchableOpacity
+        style={styles.fabButton}
+        onPress={() => navigation.navigate('QRCodeGenerator')}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="qrcode" size={28} color="#FFFFFF" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -124,6 +133,22 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 13, color: COLORS.textMuted, marginLeft: 6 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
   emptyText: { fontSize: 16, color: COLORS.textMuted, marginTop: 16 },
+  fabButton: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
 });
 
 export default AnimalsListScreen;

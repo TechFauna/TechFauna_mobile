@@ -12,6 +12,7 @@ import {
   ActivityIndicator, // Importado
   Linking, // Importado
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -32,13 +33,11 @@ const COLORS = {
 };
 
 // Componente do Modal de Edição
-const EditProfileModal = ({ visible, onClose, user, onSave, organizationName, userRole, userType }) => {
+const EditProfileModal = ({ visible, onClose, user, onSave, organizationName, userRole }) => {
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const isOwner = userType === 'owner';
 
   // Sincroniza os valores quando o modal abre ou os dados mudam
   useEffect(() => {
@@ -57,20 +56,13 @@ const EditProfileModal = ({ visible, onClose, user, onSave, organizationName, us
 
     setIsUpdating(true);
     try {
-      // Monta os dados a atualizar - empresa só pode ser alterada pelo dono
-      const updateData = {
-        name: name.trim(),
-        role: role.trim() || null,
-      };
-
-      // Só permite alterar empresa se for dono
-      if (isOwner) {
-        updateData.company = company.trim() || null;
-      }
-
       // Atualiza os metadados do usuário no Supabase
       const { data, error } = await supabase.auth.updateUser({
-        data: updateData,
+        data: {
+          name: name.trim(),
+          company: company.trim() || null,
+          role: role.trim() || null,
+        },
       });
 
       if (error) throw error;
@@ -107,17 +99,11 @@ const EditProfileModal = ({ visible, onClose, user, onSave, organizationName, us
 
             <Text style={styles.inputLabel}>Empresa</Text>
             <TextInput
-              style={[styles.input, !isOwner && styles.inputDisabled]}
-              placeholder={isOwner ? "Nome da empresa (opcional)" : "Vinculado pelo administrador"}
+              style={styles.input}
+              placeholder="Nome da empresa (opcional)"
               value={company}
               onChangeText={setCompany}
-              editable={isOwner}
             />
-            {!isOwner && (
-              <Text style={styles.inputHint}>
-                Somente o administrador pode alterar a empresa
-              </Text>
-            )}
 
             <Text style={styles.inputLabel}>Função</Text>
             <TextInput
@@ -469,6 +455,8 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isCompanyCodeModalVisible, setIsCompanyCodeModalVisible] = useState(false);
   const [organizationName, setOrganizationName] = useState('');
+  const [organizationCode, setOrganizationCode] = useState('');
+  const [showCode, setShowCode] = useState(false);
 
   const userName =
     user?.user_metadata?.name ||
@@ -490,7 +478,7 @@ const ProfileScreen = ({ navigation, onLogout }) => {
       setTasks(tasksData || []);
       setChecklists(checklistsData || []);
 
-      // Busca o nome da organização do usuário
+      // Busca o nome e código da organização do usuário
       const { data: profile } = await supabase
         .from('profiles')
         .select('organization_id')
@@ -500,11 +488,12 @@ const ProfileScreen = ({ navigation, onLogout }) => {
       if (profile?.organization_id) {
         const { data: org } = await supabase
           .from('organizations')
-          .select('name')
+          .select('name, code')
           .eq('id', profile.organization_id)
           .single();
 
         setOrganizationName(org?.name || '');
+        setOrganizationCode(org?.code || '');
       }
     } catch (error) {
       Alert.alert('Falha ao carregar dados', error?.message || 'Tente novamente mais tarde.');
@@ -607,33 +596,35 @@ const ProfileScreen = ({ navigation, onLogout }) => {
           <Text style={styles.userEmail}>{user?.email}</Text>
         </View>
 
-        {/* CARD DE PONTOS E BONIFICAÇÕES */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Pontos e Bonificações</Text>
-          <View style={styles.infoRow}>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoLabel}>Pontos Totais</Text>
-              <Text style={styles.infoValue}>{rewardTier.totalPoints}</Text>
-            </View>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoLabel}>Nível Atual</Text>
-              <View style={styles.levelRow}>
-                <MaterialCommunityIcons name="shield-star" size={20} color={rewardTier.color} />
-                <Text style={[styles.infoValue, { fontSize: 20, color: rewardTier.color }]}>
-                  {rewardTier.level}
-                </Text>
+        {/* CARD DE PONTOS E BONIFICAÇÕES (apenas para funcionários) */}
+        {userType !== 'owner' && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Pontos e Bonificações</Text>
+            <View style={styles.infoRow}>
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Pontos Totais</Text>
+                <Text style={styles.infoValue}>{rewardTier.totalPoints}</Text>
+              </View>
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Nível Atual</Text>
+                <View style={styles.levelRow}>
+                  <MaterialCommunityIcons name="shield-star" size={20} color={rewardTier.color} />
+                  <Text style={[styles.infoValue, { fontSize: 20, color: rewardTier.color }]}>
+                    {rewardTier.level}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          <Text style={styles.bonusTitle}>Bonificações Ativas:</Text>
-          {rewardTier.bonuses.map((bonus, index) => (
-            <View key={index} style={styles.bonusRow}>
-              <MaterialCommunityIcons name="check-decagram" size={18} color={COLORS.primary} />
-              <Text style={styles.bonusText}>{bonus}</Text>
-            </View>
-          ))}
-        </View>
+            <Text style={styles.bonusTitle}>Bonificações Ativas:</Text>
+            {rewardTier.bonuses.map((bonus, index) => (
+              <View key={index} style={styles.bonusRow}>
+                <MaterialCommunityIcons name="check-decagram" size={18} color={COLORS.primary} />
+                <Text style={styles.bonusText}>{bonus}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* CARD DE EMPRESA (apenas para funcionários - não donos) */}
         {userType !== 'owner' && (
@@ -676,6 +667,58 @@ const ProfileScreen = ({ navigation, onLogout }) => {
                 </TouchableOpacity>
               </>
             )}
+          </View>
+        )}
+
+        {/* CARD DE CÓDIGO DA EMPRESA (apenas para donos) */}
+        {userType === 'owner' && organizationCode && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Código da Empresa</Text>
+
+            <View style={styles.companyCodeCard}>
+              <View style={styles.companyCodeHeader}>
+                <View style={[styles.companyIconContainer, { backgroundColor: '#E8F5E9' }]}>
+                  <MaterialCommunityIcons name="key-variant" size={28} color={COLORS.primary} />
+                </View>
+                <View style={styles.companyCodeInfo}>
+                  <Text style={styles.companyCodeLabel}>Compartilhe este código com seus funcionários:</Text>
+                </View>
+              </View>
+
+              <View style={styles.codeContainer}>
+                <Text style={styles.codeText}>
+                  {showCode ? organizationCode : '••••••••'}
+                </Text>
+                <TouchableOpacity
+                  style={styles.codeToggleButton}
+                  onPress={() => setShowCode(!showCode)}
+                >
+                  <MaterialCommunityIcons
+                    name={showCode ? 'eye-off' : 'eye'}
+                    size={22}
+                    color={COLORS.textMuted}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.codeActions}>
+                <TouchableOpacity
+                  style={styles.copyCodeButton}
+                  onPress={async () => {
+                    // Copia o código para a área de transferência
+                    await Clipboard.setStringAsync(organizationCode);
+                    Alert.alert('Copiado!', 'Código copiado para a área de transferência.');
+                  }}
+                >
+                  <MaterialCommunityIcons name="content-copy" size={18} color={COLORS.surface} />
+                  <Text style={styles.copyCodeButtonText}>Copiar Código</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.codeHint}>
+                Os funcionários podem usar este código na tela de perfil para se vincular à sua empresa.
+              </Text>
+            </View>
           </View>
         )}
 
@@ -727,7 +770,6 @@ const ProfileScreen = ({ navigation, onLogout }) => {
         onSave={handleUpdateUserInContext} // Atualiza o usuário no contexto
         organizationName={organizationName}
         userRole={role}
-        userType={userType}
       />
 
       {/* Renderiza o Modal de Código da Empresa */}
@@ -930,17 +972,6 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: 12,
   },
-  inputDisabled: {
-    backgroundColor: '#E8EAED',
-    color: COLORS.textMuted,
-  },
-  inputHint: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: -8,
-    marginBottom: 12,
-    fontStyle: 'italic',
-  },
   primaryButton: {
     marginTop: 16,
     backgroundColor: COLORS.primary,
@@ -1135,6 +1166,70 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     paddingHorizontal: 10,
+  },
+  // --- Estilos do Card de Código da Empresa (Owner) ---
+  companyCodeCard: {
+    marginTop: 8,
+  },
+  companyCodeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  companyCodeInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  companyCodeLabel: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    lineHeight: 20,
+  },
+  codeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0F4F8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  codeText: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.text,
+    letterSpacing: 4,
+    flex: 1,
+    textAlign: 'center',
+  },
+  codeToggleButton: {
+    padding: 8,
+  },
+  codeActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  copyCodeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+  },
+  copyCodeButtonText: {
+    color: COLORS.surface,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  codeHint: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: 4,
   },
 });
 
