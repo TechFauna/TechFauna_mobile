@@ -13,8 +13,8 @@
       "backgroundColor": "#ffffff"
     },
      "extra": {
-      "supabaseUrl": "https://aiqtjppndsjclenzmvem.supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpcXRqcHBuZHNqY2xlbnptdmVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNDYzNDEsImV4cCI6MjA3MDYyMjM0MX0.EP87gZzZdsciI_3RrRqP22nsoYTrpX1o-X2bZJqVsG8" 
+      "supabaseUrl": "https://ktxactszsfoeshhkyvcr.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0eGFjdHN6c2ZvZXNoaGt5dmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxOTExMjgsImV4cCI6MjA3OTc2NzEyOH0.zd3c9ApMJV9gf8-dk0gGNHxw_ZEFQY3hEa0WdcyPxQU"
     },
     "ios": {
       "supportsTablet": true,

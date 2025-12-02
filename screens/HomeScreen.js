@@ -71,7 +71,16 @@ const HomeScreen = ({ navigation }) => {
       });
 
       if (address && address.length > 0) {
-        const primaryText = address[0].street ? `${address[0].street}, ${address[0].name}` : `${address[0].city}, ${address[0].region}`;
+        const addr = address[0];
+        let primaryText;
+        if (addr.street) {
+          // Usa streetNumber se disponível, senão usa apenas a rua
+          primaryText = addr.streetNumber
+            ? `${addr.street}, ${addr.streetNumber}`
+            : addr.street;
+        } else {
+          primaryText = `${addr.city}, ${addr.region}`;
+        }
         setLocationText(primaryText || 'Localização desconhecida');
       } else {
         setLocationText('Endereço não encontrado.');
@@ -169,6 +178,16 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('AnimalCatalog');
   };
 
+  const handleStatPress = (statKey) => {
+    if (statKey === 'enclosures') {
+      navigation.navigate('EnclosuresList');
+    } else if (statKey === 'animals') {
+      navigation.navigate('AnimalsList');
+    } else if (statKey === 'species') {
+      navigation.navigate('SpeciesList');
+    }
+  };
+
   const formatDateTime = () => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('pt-BR', {
@@ -199,7 +218,7 @@ const HomeScreen = ({ navigation }) => {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Ola, {displayName}</Text>
+            <Text style={styles.greeting}>Olá, {displayName}</Text>
             <Text style={styles.subGreeting}>{date}</Text>
             <Text style={styles.subGreeting}>{time}</Text>
           </View>
@@ -221,11 +240,16 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.cardTitle}>Resumo rapido</Text>
           <View style={styles.statsRow}>
             {quickStats.map((stat) => (
-              <View key={stat.key} style={styles.statCard}>
+              <TouchableOpacity
+                key={stat.key}
+                style={styles.statCard}
+                onPress={() => handleStatPress(stat.key)}
+                activeOpacity={0.7}
+              >
                 <MaterialCommunityIcons name={stat.icon} size={24} color={COLORS.primary} />
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -285,20 +309,6 @@ const HomeScreen = ({ navigation }) => {
             </Text>
             <MaterialCommunityIcons name="arrow-right" size={18} color={COLORS.primary} />
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.quickActions}>
-          <Text style={styles.cardTitle}>Acoes rapidas</Text>
-          <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleScanQR}>
-              <MaterialCommunityIcons name="qrcode-scan" size={26} color="#FFF" />
-              <Text style={styles.actionLabel}>Escanear QR</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleViewAnimals}>
-              <MaterialCommunityIcons name="paw" size={26} color="#FFF" />
-              <Text style={styles.actionLabel}>Ver animais</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
+import { useFocusEffect } from '@react-navigation/native';
 import { handleQRCodeData } from '../utils/qrCodeHandler';
 
 const COLORS = {
@@ -38,29 +39,22 @@ const QRCodeScreen = ({ navigation }) => {
     getCameraPermissions();
   }, []);
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  // Reseta o estado quando a tela ganha foco (usuário voltou de outra tela)
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // Só reseta quando SAIR da tela
+        setScanned(false);
+      };
+    }, [])
+  );
+
+  const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
 
     // Usa o handler personalizado para processar os dados
-    handleQRCodeData(data, type, navigation);
-
-    // Adiciona opção para escanear novamente
-    setTimeout(() => {
-      Alert.alert(
-        'QR Code Processado',
-        'Deseja escanear outro código?',
-        [
-          {
-            text: 'Sim',
-            onPress: () => setScanned(false),
-          },
-          {
-            text: 'Não',
-            style: 'cancel',
-          },
-        ]
-      );
-    }, 1000); // Delay para permitir que outros alertas sejam mostrados primeiro
+    // O handler já faz a navegação, não precisa de alert adicional
+    await handleQRCodeData(data, type, navigation);
   };
 
   const toggleFlash = () => {
